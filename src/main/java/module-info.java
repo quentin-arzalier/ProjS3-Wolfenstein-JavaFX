@@ -1,4 +1,4 @@
-open module ihm.wolfenstein {
+open module wolfenstein {
     requires javafx.base;
     requires javafx.controls;
     requires javafx.graphics;

@@ -18,7 +18,12 @@ public class FXTest extends Application {
 
     private WritableImage monImage;
     private Scene scene;
-    GraphicsContext context;
+    private GraphicsContext context;
+    private Pane root;
+    private Pane layerPane;
+    private Canvas canvas;
+
+
     private AnimationTimer border;
     private AnimationTimer game;
     private int directX = 1;
@@ -31,22 +36,25 @@ public class FXTest extends Application {
 
     @Override
     public void start(Stage primaryStage){
-        BorderPane root = new BorderPane();
+        root = new Pane();
         monImage = new WritableImage(32,32);
-        Pane layerPane = new Pane();
-        Canvas canvas = new Canvas(320, 320);
+        layerPane = new Pane();
+        canvas = new Canvas(320, 320);
         context = canvas.getGraphicsContext2D();
-        context.scale(10, 10);
-        context.setImageSmoothing(false);
+        //context.scale(10, 10);
+        //context.setImageSmoothing(false);
         layerPane.getChildren().add(canvas);
-        root.setCenter(layerPane);
+        root.getChildren().add(canvas);
+        root.setStyle("-fx-background-color: red");
         scene = new Scene(root, 320, 320);
         primaryStage.setTitle("Test JavaFX");
         primaryStage.setScene(scene);
         primaryStage.show();
-        makeBorder();
-        startGame();
-        addHandlers();
+        //makeBorder();
+        //startGame();
+        //addHandlers();
+        context.setFill(Color.BLUE);
+        context.fillRect(0, 0, 160, 160);
     }
 
     private void changePixel(int x, int y, Color c){
