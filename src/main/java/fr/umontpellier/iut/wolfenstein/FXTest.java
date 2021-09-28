@@ -2,32 +2,18 @@ package fr.umontpellier.iut.wolfenstein;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.util.concurrent.TimeUnit;
+import java.security.spec.RSAOtherPrimeInfo;
 
 public class FXTest extends Application {
-
-
-
-        /*
-    private AnimationTimer border;
-    private AnimationTimer snake;
-    private AnimationTimer wall;
-
-    private int directX = 1;
-    private int directY = 0;
-    private int wallSize = 10;
-    */
 
     private AnimationTimer game;
     private AnimationTimer game2;
@@ -43,7 +29,7 @@ public class FXTest extends Application {
         {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
         {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
         {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
+        {1,0,0,0,0,0,5,5,5,5,5,0,0,0,0,3,0,3,0,3,0,0,0,1},
         {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
         {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1},
         {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
@@ -66,19 +52,21 @@ public class FXTest extends Application {
     };
 
     // La position du joueur dans le quadrillage
-    private float posX = 8;
-    private float posY = 6;
+    private float posX = 12;
+    private float posY = 9;
 
     // Le vecteur direction du joueur
-    private float vx = 0.80388105f;
-    private float vy = 0.59479f;
+    private float vx = -1;
+    private float vy = 0;
 
+    // Le vecteur direction de la caméra (perpendiculaire au joueur)
     private float latX = 0;
-    private float latY = 1;
+    private float latY = -1;
 
     private float moveSpeed = 0;
     private float rotSpeed = 0;
 
+    // Les valeurs booléennes qui servent pour déplacer le joueur
     private boolean isUp = false;
     private boolean isDown = false;
     private boolean isLeft = false;
@@ -92,27 +80,35 @@ public class FXTest extends Application {
     @Override
     public void start(Stage primaryStage){
         GridPane root = new GridPane();
+
+        // Image principale
         monImage = new WritableImage(width,height);
-        monImage2 = new WritableImage(width,height);
         ImageView pog = new ImageView(monImage);
-        ImageView pog2 = new ImageView(monImage2);
         root.add(pog, 0, 0);
-        root.add(pog2, 1, 0);
+
+        // Image de debug
+        monImage2 = new WritableImage(width,height);
+        ImageView pog2 = new ImageView(monImage2);
+        root.add(pog2, 0, 1);
+
         scene = new Scene(root);
-        primaryStage.setTitle("Test JavaFX");
+        primaryStage.setTitle("Projet Wolfenstus 3D");
         primaryStage.setScene(scene);
         primaryStage.show();
+
         gameHandlers();
         startGame();
         copiedGame();
     }
 
+    /**
+     * La méthode changePixel permet de changer la couleur d'un pixel de l'image monImage, qui est l'affichage principal du jeu
+     * @param x Les coordonnées du pixel sur l'axe des x (abscisses)
+     * @param y Les coordonnées du pixel sur l'axe des y (ordonnées)
+     * @param c La nouvelle couleur du pixel
+     */
     private void changePixel(int x, int y, Color c){
         monImage.getPixelWriter().setColor(x, y, c);
-    }
-
-    private void changePixelBis(int x, int y, Color c){
-        monImage2.getPixelWriter().setColor(x, y, c);
     }
 
     private void startGame() {
@@ -121,72 +117,66 @@ public class FXTest extends Application {
 
             @Override
             public void handle(long now) {
-                System.out.println("fps = " + 1_000 / ((now - lastUpdate) / 1_000_000));
+
+                // Compteur de fps
+                //System.out.println("fps = " + 1_000 / ((now - lastUpdate) / 1_000_000));
+
                 for (int i = 0; i < width; i++) {
-                    float camX = 2 * i / (float) width - 1;
+                    float camX = 2 * i / (float) width -1;
                     float rayDirX = vx + latX * camX;
                     float rayDirY = vy + latY * camX;
 
-                    // La distance du joueur au quadrillage pour chaque vecteur du plan
-                    float dX;
-                    float dY;
 
-                    // La distance du mur par rapport au vecteur camera
-                    float distX;
-                    float distY;
-
+                    // La distance du mur normalisée
                     float t = 0;
+
+                    // Les coordonnées xi et yi permettent de nous localiser dans le plan
                     int xi = (int) posX;
                     int yi = (int) posY;
-                    if (rayDirX == 0) {
-                        distX = 1000000000000000000f;
-                    } else {
-                        if (rayDirX > 0) {
-                            dX = 1 - (posX % 1);
-                        } else {
-                            dX = posX % 1;
-                        }
-                        if (dX == 0){
-                            dX = 1;
-                        }
-                        distX = Math.abs(dX / rayDirX);
-                    }
 
-                    if (rayDirY == 0) {
-                        distY = 1000000000000000000f;
-                    } else {
-                        if (rayDirY > 0) {
-                            dY = 1 - (posY % 1);
-                        } else {
-                            dY = posY % 1;
-                        }
-                        if (dY == 0){
-                            dY = 1;
-                        }
-                        distY = Math.abs(dY / rayDirY);
-                    }
+
+                    float[] infosX = getInfos(rayDirX, posX);
+                    float[] infosY = getInfos(rayDirY, posY);
+
+                    float distX = infosX[0];
+                    float distY = infosY[0];
+
+                    float dx = infosX[1];
+                    float dy = infosY[1];
+
                     int hit = 0;
                     int side = 0;
 
                     while (hit == 0) {
                         if (distX < distY) {
                             t += distX;
-                            xi++;
-                            dY = distX * vy;
-                            dX = 1;
+                            if (rayDirX > 0){
+                                xi++;
+                            }
+                            else {
+                                xi--;
+                            }
+                            dy -= distX * rayDirY;
+                            dx = 1;
                             side = 0;
-                        } else {
+                        }
+                        else {
                             t += distY;
-                            yi++;
-                            dX = distY * vx;
-                            dY = 1;
+                            if (rayDirY > 0){
+                                yi++;
+                            }
+                            else {
+                                yi--;
+                            }
+                            dx -= distY * rayDirX;
+                            dy = 1;
                             side = 1;
                         }
                         if (rayDirX != 0) {
-                            distX = Math.abs(dX / rayDirX);
+                            distX = Math.abs(dx / rayDirX);
                         }
                         if (rayDirY != 0) {
-                            distY = Math.abs(dY / rayDirY);
+                            distY = Math.abs(dy / rayDirY);
                         }
                         hit = worldMap[xi][yi];
                     }
@@ -198,35 +188,44 @@ public class FXTest extends Application {
                     int debutSol = wallHeight / 2 + height / 2;
                     if (debutSol >= height) debutSol = height - 1;
 
-                    Color color = chooseColor(hit);
-                    if (side == 1){
-                        color = color.darker();
-                    }
-
                     for (int j = 0; j < height; j++) {
-                        Color colorb;
+                        Color color;
                         if (j < finToit){
-                            colorb = Color.GRAY;
+                            color = Color.GRAY;
                         }
                         else if (j >= debutSol){
-                            colorb = Color.BLACK;
+                            color = Color.BLACK;
                         }
                         else {
-                            colorb = color;
+                            color = chooseColor(hit);
+                            if (side == 1){
+                                color = color.darker();
+                            }
                         }
-                        changePixel(i, j, colorb);
+                        changePixel(i, j, color);
                     }
                 }
+                // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
                 float frameTime = (now - lastUpdate) / 1_000_000_000f;
                 moveSpeed = frameTime * 5;
                 rotSpeed = frameTime * 3;
                 moveCharacter();
+
+                // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
+
+                //this.stop();
             }
         };
         game.start();
     }
 
+
+    /**
+     * Cette méthode permet de savoir de quel couleur est le mur à dessiner
+     * @param hit L'identifiant du mur dans la matrice worldMap
+     * @return La couleur du mur
+     */
     private Color chooseColor(int hit){
         switch (hit) {
             case 1:
@@ -242,35 +241,38 @@ public class FXTest extends Application {
         }
     }
 
-    private void moveCharacter(){
-        if(isLeft) {
-            float oldVx = vx;
-            vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
-            vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
-            float oldLatx = latX;
-            latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
-            latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
+
+    /**
+     * Cette methode calcule la distance du joueur par rapport au mur en fonction de v sur un axe en particulier
+     * @param rayDir Il s'agit de la direction du rayon de vision sur l'axe donné
+     * @param pos Il s'agit de la position du joueur sur l'axe donné
+     * @return La distance normalisée du prochain mur et le delta
+     */
+    private float[] getInfos(float rayDir, float pos){
+        float[] infos = new float[2];
+        if (rayDir == 0) {
+            infos[0] = 1000000000000000000f;
+            infos[1] = 1000000000000000000f;
+        } else {
+            if (rayDir > 0) {
+                infos[1] = 1 - (pos % 1);
+            } else {
+                infos[1] = pos % 1;
+            }
+            if (infos[1] == 0){
+                infos[1] = 1;
+            }
+            infos[0] = Math.abs(infos[1] / rayDir);
         }
-        else if (isRight) {
-            float oldVx = vx;
-            vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
-            vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
-            float oldLatx = latX;
-            latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
-            latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
-        }
-        else if (isUp && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
-            if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
-        }
-        else if (isDown && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
-            if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
-        }
+        return infos;
     }
 
 
-
+    /**
+     * Cette méthode permet de lire les inputs du joueur sur son clavier afin de faire fonctionner le mouvement de la caméra première personne.
+     * L'évènement KEY_PRESSED permet de savoir quand une touche du clavier est appuyée, et active les boolean respectifs.
+     * L'évènement KEY_RELEASED détecte le moment où les touches sont relachées, et désactive les boolean respectifs.
+     */
     private void gameHandlers() {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode()== KeyCode.LEFT) {
@@ -305,6 +307,47 @@ public class FXTest extends Application {
         });
     }
 
+    /**
+     * Cette méthode est appelée à chaque frame pour faire bouger le joueur selon les boolean de déplacement activés ou non par les touches du clavier.
+     * On vérifie les états des boolean, et on tourne la caméra/ déplace le joueur en fonction de leur valeurs.
+     */
+    private void moveCharacter(){
+        if(isLeft) {
+            float oldVx = vx;
+            vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
+            vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
+            float oldLatx = latX;
+            latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
+            latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
+        }
+        else if (isRight) {
+            float oldVx = vx;
+            vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
+            vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
+            float oldLatx = latX;
+            latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
+            latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
+        }
+        else if (isUp && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
+        }
+        else if (isDown && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
+        }
+    }
+
+    /**
+     * N'existe que pour des fins de debug. À supprimer dès que startGame() fonctionne
+     */
+    private void changePixelBis(int x, int y, Color c){
+        monImage2.getPixelWriter().setColor(x, y, c);
+    }
+
+    /**
+     * N'existe que pour des fins de debug. À supprimer dès que startGame() fonctionne
+     */
     private void copiedGame() {
         game2 = new AnimationTimer() {
             private long lastUpdate = 0;
@@ -315,10 +358,6 @@ public class FXTest extends Application {
                     float camX = 2 * i / (float) width - 1;
                     float rayDirX = vx + latX * camX;
                     float rayDirY = vy + latY * camX;
-
-                    // La distance du joueur au quadrillage pour chaque vecteur du plan
-                    float dX;
-                    float dY;
 
                     // La distance du mur par rapport au vecteur camera
                     float distX;
@@ -429,12 +468,11 @@ public class FXTest extends Application {
                         }
                         changePixelBis(i, j, colorB);
                     }
+
                 }
-                float frameTime = (now - lastUpdate) / 1_000_000_000f;
-                moveSpeed = frameTime * 5;
-                rotSpeed = frameTime * 3;
                 //moveCharacter();
                 lastUpdate = now;
+                //this.stop();
             }
         };
         game2.start();
