@@ -34,8 +34,8 @@ public class FXTest extends Application {
     private WritableImage monImage;
     private WritableImage monImage2;
     private Scene scene;
-    private final int width = 320;
-    private final int height = 200;
+    private final int width = 640;
+    private final int height = 320;
 
     private final int[][] worldMap =
     {
@@ -78,7 +78,11 @@ public class FXTest extends Application {
 
     private float moveSpeed = 0;
     private float rotSpeed = 0;
-    private EventHandler<KeyEvent> curr = null;
+
+    private boolean isUp = false;
+    private boolean isDown = false;
+    private boolean isLeft = false;
+    private boolean isRight = false;
 
 
     public static void main(String[] args) {
@@ -98,6 +102,7 @@ public class FXTest extends Application {
         primaryStage.setTitle("Test JavaFX");
         primaryStage.setScene(scene);
         primaryStage.show();
+        gameHandlers();
         startGame();
         copiedGame();
     }
@@ -193,27 +198,11 @@ public class FXTest extends Application {
                     int debutSol = wallHeight / 2 + height / 2;
                     if (debutSol >= height) debutSol = height - 1;
 
-                    Color color;
-                    switch (hit) {
-                        case 1:
-                            color = Color.RED;
-                            break; //red
-                        case 2:
-                            color = Color.GREEN;
-                            break; //green
-                        case 3:
-                            color = Color.BLUE;
-                            break; //blue
-                        case 4:
-                            color = Color.WHITE;
-                            break; //white
-                        default:
-                            color = Color.YELLOW;
-                            break; //yellow
-                    }
+                    Color color = chooseColor(hit);
                     if (side == 1){
                         color = color.darker();
                     }
+
                     for (int j = 0; j < height; j++) {
                         Color colorb;
                         if (j < finToit){
@@ -231,48 +220,89 @@ public class FXTest extends Application {
                 float frameTime = (now - lastUpdate) / 1_000_000_000f;
                 moveSpeed = frameTime * 5;
                 rotSpeed = frameTime * 3;
-                gameHandlers();
+                moveCharacter();
                 lastUpdate = now;
             }
         };
         game.start();
     }
 
-    private void gameHandlers() {
-        EventHandler<KeyEvent> old = curr;
-        if (old != null) {
-            scene.removeEventHandler(KeyEvent.KEY_PRESSED, old);
+    private Color chooseColor(int hit){
+        switch (hit) {
+            case 1:
+                return Color.RED;
+            case 2:
+                return Color.GREEN;
+            case 3:
+                return Color.BLUE;
+            case 4:
+                return Color.WHITE;
+            default:
+                return Color.YELLOW;
         }
-        curr = (key) -> {
+    }
+
+    private void moveCharacter(){
+        if(isLeft) {
+            float oldVx = vx;
+            vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
+            vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
+            float oldLatx = latX;
+            latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
+            latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
+        }
+        else if (isRight) {
+            float oldVx = vx;
+            vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
+            vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
+            float oldLatx = latX;
+            latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
+            latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
+        }
+        else if (isUp && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
+        }
+        else if (isDown && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
+        }
+    }
+
+
+
+    private void gameHandlers() {
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if(key.getCode()== KeyCode.LEFT) {
-                float oldVx = vx;
-                vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
-                vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
-                float oldLatx = latX;
-                latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
-                latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
+                isLeft = true;
             }
             else if (key.getCode()== KeyCode.RIGHT) {
-                float oldVx = vx;
-                vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
-                vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
-                float oldLatx = latX;
-                latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
-                latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
+                isRight = true;
             }
             else if (key.getCode()== KeyCode.UP && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
-                if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
-                if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
+                isUp = true;
             }
             else if (key.getCode()== KeyCode.DOWN && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
-                if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
-                if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
+                isDown = true;
             }
             else if (key.getCode()== KeyCode.ESCAPE){
                 game.stop();
             }
-        };
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, curr);
+        });
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) -> {
+            if(key.getCode()== KeyCode.LEFT) {
+                isLeft = false;
+            }
+            else if (key.getCode()== KeyCode.RIGHT) {
+                isRight = false;
+            }
+            else if (key.getCode()== KeyCode.UP && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+                isUp = false;
+            }
+            else if (key.getCode()== KeyCode.DOWN && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+                isDown = false;
+            }
+        });
     }
 
     private void copiedGame() {
@@ -403,7 +433,7 @@ public class FXTest extends Application {
                 float frameTime = (now - lastUpdate) / 1_000_000_000f;
                 moveSpeed = frameTime * 5;
                 rotSpeed = frameTime * 3;
-                gameHandlers();
+                //moveCharacter();
                 lastUpdate = now;
             }
         };
