@@ -122,6 +122,8 @@ public class FXTest extends Application {
                 //System.out.println("fps = " + 1_000 / ((now - lastUpdate) / 1_000_000));
 
                 for (int i = 0; i < width; i++) {
+                    float newPosY = posY;
+                    float newPosX = posX;
                     float camX = 2 * i / (float) width -1;
                     float rayDirX = vx + latX * camX;
                     float rayDirY = vy + latY * camX;
@@ -141,14 +143,12 @@ public class FXTest extends Application {
                     float distX = infosX[0];
                     float distY = infosY[0];
 
-                    float dx = infosX[1];
-                    float dy = infosY[1];
-
                     int hit = 0;
                     int side = 0;
 
+
                     while (hit == 0) {
-                        if (distX < distY) {
+                        if (distX <= distY) {
                             t += distX;
                             if (rayDirX > 0){
                                 xi++;
@@ -156,8 +156,8 @@ public class FXTest extends Application {
                             else {
                                 xi--;
                             }
-                            dy -= distX * rayDirY;
-                            dx = 1;
+                            newPosY = newPosY + distX * rayDirY;
+                            newPosX = newPosX + distX * rayDirX;
                             side = 0;
                         }
                         else {
@@ -168,16 +168,16 @@ public class FXTest extends Application {
                             else {
                                 yi--;
                             }
-                            dx -= distY * rayDirX;
-                            dy = 1;
+                            newPosY = newPosY + distY * rayDirY;
+                            newPosX = newPosX + distY * rayDirX;
                             side = 1;
                         }
-                        if (rayDirX != 0) {
-                            distX = Math.abs(dx / rayDirX);
-                        }
-                        if (rayDirY != 0) {
-                            distY = Math.abs(dy / rayDirY);
-                        }
+                        float[] infosBisX = getInfos(rayDirX, newPosX);
+                        float[] infosBisY = getInfos(rayDirY, newPosY);
+
+                        distX = infosBisX[0];
+                        distY = infosBisY[0];
+
                         hit = worldMap[xi][yi];
                     }
                     int wallHeight = (int) (height / t);
@@ -246,7 +246,7 @@ public class FXTest extends Application {
      * Cette methode calcule la distance du joueur par rapport au mur en fonction de v sur un axe en particulier
      * @param rayDir Il s'agit de la direction du rayon de vision sur l'axe donné
      * @param pos Il s'agit de la position du joueur sur l'axe donné
-     * @return La distance normalisée du prochain mur et le delta
+     * @return La distance normalisée du prochain mur [0] et le delta [1]
      */
     private float[] getInfos(float rayDir, float pos){
         float[] infos = new float[2];
@@ -259,7 +259,7 @@ public class FXTest extends Application {
             } else {
                 infos[1] = pos % 1;
             }
-            if (infos[1] == 0){
+            if (infos[1] == 0 && rayDir < 0){
                 infos[1] = 1;
             }
             infos[0] = Math.abs(infos[1] / rayDir);
@@ -398,6 +398,9 @@ public class FXTest extends Application {
                         stepY = 1;
                         distY = (mapY + 1 - posY) * deltaY;
                     }
+
+
+
                     //perform DDA
                     while(hit == 0)
                     {
