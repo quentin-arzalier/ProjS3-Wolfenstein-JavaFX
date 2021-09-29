@@ -11,8 +11,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.security.spec.RSAOtherPrimeInfo;
-
 public class FXTest extends Application {
 
     private AnimationTimer game;
@@ -26,21 +24,21 @@ public class FXTest extends Application {
     private final int[][] worldMap =
     {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,5,5,5,5,5,0,0,0,0,3,0,3,0,3,0,0,0,1},
-        {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1},
-        {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3},
+        {1,0,0,0,0,0,5,5,5,5,5,0,0,0,0,3,0,3,0,3,0,0,0,3},
+        {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,3},
+        {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,3},
+        {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,3},
+        {1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,3},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
         {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
         {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
         {1,4,0,0,0,0,5,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
@@ -52,8 +50,8 @@ public class FXTest extends Application {
     };
 
     // La position du joueur dans le quadrillage
-    private float posX = 12;
-    private float posY = 9;
+    private float posX = 12.5f;
+    private float posY = 9.5f;
 
     // Le vecteur direction du joueur
     private float vx = -1;
@@ -61,7 +59,7 @@ public class FXTest extends Application {
 
     // Le vecteur direction de la caméra (perpendiculaire au joueur)
     private float latX = 0;
-    private float latY = -1;
+    private float latY = 1;
 
     private float moveSpeed = 0;
     private float rotSpeed = 0;
@@ -136,12 +134,8 @@ public class FXTest extends Application {
                     int xi = (int) posX;
                     int yi = (int) posY;
 
-
-                    float[] infosX = getInfos(rayDirX, posX);
-                    float[] infosY = getInfos(rayDirY, posY);
-
-                    float distX = infosX[0];
-                    float distY = infosY[0];
+                    float distX = getDist(rayDirX, newPosX);
+                    float distY = getDist(rayDirY, newPosY);
 
                     int hit = 0;
                     int side = 0;
@@ -172,11 +166,9 @@ public class FXTest extends Application {
                             newPosX = newPosX + distY * rayDirX;
                             side = 1;
                         }
-                        float[] infosBisX = getInfos(rayDirX, newPosX);
-                        float[] infosBisY = getInfos(rayDirY, newPosY);
 
-                        distX = infosBisX[0];
-                        distY = infosBisY[0];
+                        distX = getDist(rayDirX, newPosX);
+                        distY = getDist(rayDirY, newPosY);
 
                         hit = worldMap[xi][yi];
                     }
@@ -246,25 +238,25 @@ public class FXTest extends Application {
      * Cette methode calcule la distance du joueur par rapport au mur en fonction de v sur un axe en particulier
      * @param rayDir Il s'agit de la direction du rayon de vision sur l'axe donné
      * @param pos Il s'agit de la position du joueur sur l'axe donné
-     * @return La distance normalisée du prochain mur [0] et le delta [1]
+     * @return La distance normalisée du prochain mur
      */
-    private float[] getInfos(float rayDir, float pos){
-        float[] infos = new float[2];
+    private float getDist(float rayDir, float pos){
+        float dist;
+        float delta;
         if (rayDir == 0) {
-            infos[0] = 1000000000000000000f;
-            infos[1] = 1000000000000000000f;
+            dist = 1000000000000000000f;
         } else {
             if (rayDir > 0) {
-                infos[1] = 1 - (pos % 1);
+                delta = 1 - (pos % 1);
             } else {
-                infos[1] = pos % 1;
+                delta = pos % 1;
             }
-            if (infos[1] == 0 && rayDir < 0){
-                infos[1] = 1;
+            if (delta == 0 && rayDir < 0){
+                delta = 1;
             }
-            infos[0] = Math.abs(infos[1] / rayDir);
+            dist = Math.abs(delta / rayDir);
         }
-        return infos;
+        return dist;
     }
 
 
@@ -275,33 +267,35 @@ public class FXTest extends Application {
      */
     private void gameHandlers() {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-            if(key.getCode()== KeyCode.LEFT) {
+            KeyCode code = key.getCode();
+            if(code == KeyCode.LEFT || code == KeyCode.Q) {
                 isLeft = true;
             }
-            else if (key.getCode()== KeyCode.RIGHT) {
+            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
                 isRight = true;
             }
-            else if (key.getCode()== KeyCode.UP && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            else if ((code == KeyCode.UP || code == KeyCode.Z) && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
                 isUp = true;
             }
-            else if (key.getCode()== KeyCode.DOWN && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            else if ((code == KeyCode.DOWN || code == KeyCode.S) && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
                 isDown = true;
             }
-            else if (key.getCode()== KeyCode.ESCAPE){
+            else if (code == KeyCode.ESCAPE){
                 game.stop();
             }
         });
         scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) -> {
-            if(key.getCode()== KeyCode.LEFT) {
+            KeyCode code = key.getCode();
+            if (code == KeyCode.LEFT || code == KeyCode.Q) {
                 isLeft = false;
             }
-            else if (key.getCode()== KeyCode.RIGHT) {
+            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
                 isRight = false;
             }
-            else if (key.getCode()== KeyCode.UP && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            else if ((code == KeyCode.UP || code == KeyCode.Z) && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
                 isUp = false;
             }
-            else if (key.getCode()== KeyCode.DOWN && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+            else if ((code == KeyCode.DOWN || code == KeyCode.S) && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
                 isDown = false;
             }
         });
@@ -312,7 +306,7 @@ public class FXTest extends Application {
      * On vérifie les états des boolean, et on tourne la caméra/ déplace le joueur en fonction de leur valeurs.
      */
     private void moveCharacter(){
-        if(isLeft) {
+        if(isRight) {
             float oldVx = vx;
             vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
             vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
@@ -320,7 +314,7 @@ public class FXTest extends Application {
             latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
             latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
         }
-        else if (isRight) {
+        else if (isLeft) {
             float oldVx = vx;
             vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
             vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
