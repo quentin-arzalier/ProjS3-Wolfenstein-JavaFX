@@ -15,6 +15,7 @@ public class MainApp extends Application {
     private Scene scene;
     private Player currPlayer;
     private GridPane root;
+    private Minimap minimap;
 
 
     public static void main(String[] args) {
@@ -26,7 +27,13 @@ public class MainApp extends Application {
 
         currPlayer = new Player();
         root = new GridPane();
-        game = GameRenderer.getInstance(currPlayer);
+
+
+        minimap = new Minimap();
+        minimap.setMap("levels/level0.png");
+        root.add(minimap, 3, 0);
+
+        game = new GameRenderer(currPlayer, minimap);
         game.setMap(new Map("levels/level0.png"));
         root.add(game, 0, 0, 4, 1);
 
@@ -55,6 +62,7 @@ public class MainApp extends Application {
 
     private void changeLevel(int i){
         game.setMap(new Map("levels/level" + i + ".png"));
+        minimap.setMap("levels/level" + i + ".png");
         currPlayer.resetPos();
     }
 

@@ -7,29 +7,23 @@ import javafx.scene.paint.Color;
 
 public class GameRenderer extends ImageView {
 
-    private static GameRenderer instance;
     private int[][] worldMap;
     private WritableImage monImage;
     private final Player currPlayer;
     private final int width;
     private final int height;
+    private final Minimap minimap;
 
     private AnimationTimer renderer;
 
-    private GameRenderer(Player p){
+    public GameRenderer(Player p, Minimap map){
         currPlayer = p;
         width = 480;
         height = 360;
-        this.setFitWidth(1280);
-        this.setFitHeight(720);
+        minimap = map;
+        this.setFitWidth(960);
+        this.setFitHeight(600);
         dispLoop();
-    }
-
-    public static GameRenderer getInstance(Player p){
-        if (instance == null){
-            instance = new GameRenderer(p);
-        }
-        return instance;
     }
 
     public void setMap(Map map){
@@ -156,6 +150,7 @@ public class GameRenderer extends ImageView {
 
                 // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
+                minimap.update(posX, posY, vx, vy, latX, latY);
             }
         };
     }

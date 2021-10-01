@@ -19,9 +19,9 @@ public class Map {
         height = (int) maMap.getHeight();
         worldMap = new int[width][height];
 
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                Color maCoul = reader.getColor(j, i);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Color maCoul = reader.getColor(i, j);
                 if (maCoul.equals(Color.RED)){
                     worldMap[i][j] = 1;
                 }

@@ -10,12 +10,12 @@ public class Player {
     private float posY = 16.5f;
 
     // Le vecteur direction du joueur
-    private float vx = -1;
-    private float vy = 0;
+    private float vx = 0;
+    private float vy = -1;
 
     // Le vecteur direction de la caméra (perpendiculaire au joueur)
-    private float latX = 0;
-    private float latY = 1;
+    private float latX = 1;
+    private float latY = 0;
 
     // Les vitesses de déplacement du joueur
     private float moveSpeed = 0;
@@ -33,10 +33,10 @@ public class Player {
     public void resetPos() {
         posX = 16.5f;
         posY = 16.5f;
-        vx = -1;
-        vy = 0;
-        latX = 0;
-        latY = 1;
+        vx = 0;
+        vy = 1;
+        latX = -1;
+        latY = 0;
         isUp = false;
         isDown = false;
         isLeft = false;
@@ -48,7 +48,7 @@ public class Player {
      * On vérifie les états des boolean, et on tourne la caméra/ déplace le joueur en fonction de leur valeurs.
      */
     public void moveCharacter(int[][] worldMap){
-        if(isRight) {
+        if(isLeft) {
             float oldVx = vx;
             vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
             vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
@@ -56,7 +56,7 @@ public class Player {
             latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
             latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
         }
-        if (isLeft) {
+        if (isRight) {
             float oldVx = vx;
             vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
             vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
@@ -64,11 +64,11 @@ public class Player {
             latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
             latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
         }
-        if (isUp && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+        if (isUp) {
             if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
             if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
         }
-        if (isDown && posX + vx * moveSpeed >= 0 && posX + vx * moveSpeed < 24 && posY + vy * moveSpeed >= 0 && posY + vy * moveSpeed < 24) {
+        if (isDown) {
             if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
             if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
         }
