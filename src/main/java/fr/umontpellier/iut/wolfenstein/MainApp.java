@@ -1,7 +1,6 @@
 package fr.umontpellier.iut.wolfenstein;
 
 import javafx.application.Application;
-import javafx.event.Event;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
@@ -31,7 +30,7 @@ public class MainApp extends Application {
 
         minimap = new Minimap();
         minimap.setMap("levels/level0.png");
-        root.add(minimap, 3, 0);
+        root.add(minimap, 3, 0, 2, 1);
 
         game = new GameRenderer(currPlayer, minimap);
         game.setMap(new Map("levels/level0.png"));
@@ -48,7 +47,7 @@ public class MainApp extends Application {
 
     private void addButtons(){
         Button button;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             button = new Button("Level " + i);
             int finalI = i;
             button.setOnMouseClicked((actionEvent -> changeLevel(finalI)));
