@@ -2,8 +2,6 @@ package fr.umontpellier.iut.wolfenstein;
 
 import javafx.scene.image.Image;
 
-import java.net.URL;
-
 
 public enum MurType {
     PIERRE1(1), //RED
@@ -11,33 +9,32 @@ public enum MurType {
     PIERREH(3), //BLUE
     BOIS(4), //WHITE
     PIERREB(5), //YELLOW
-    PORTEM(6); //PURPLE
+    PORTEM(6), //PURPLE
+    UNKNOWN(0); //PURPLE
 
-    private String id;
-    private Image tex;
-    private Image shadtex;
+    private final int id;
+    private final Image tex;
+    private final Image shadeTex;
 
-    MurType(Integer id){
-        this.id = id.toString();
-        this.tex = new Image("tex/"+this.id+"A.png",64,64,false,false);
-        this.shadtex = new Image("tex/"+this.id+"B.png",64,64,false,false);
+    MurType(int id){
+        this.id = id;
+        this.tex = new Image("tex/"+this.id+"A.png");
+        this.shadeTex = new Image("tex/"+this.id+"B.png");
     }
 
-    public Image getTexs(int side) {
-        switch(side){
-            case 1:
-                return shadtex;
-            default:
-                return tex;
+    public Image getText(int side) {
+        if (side == 1) {
+            return shadeTex;
         }
+        return tex;
     }
 
-    public static MurType getById(Integer id) {
+    public static MurType getById(int id) {
         for(MurType e: values()){
-            if(e.id.equals(id.toString())){
+            if(e.id == id){
                 return e;
             }
         }
-        return null;
+        return UNKNOWN;
     }
 }

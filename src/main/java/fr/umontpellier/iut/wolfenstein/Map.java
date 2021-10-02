@@ -4,8 +4,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.paint.Color;
 
-import java.util.Arrays;
-
 public class Map {
 
     private final int[][] worldMap;

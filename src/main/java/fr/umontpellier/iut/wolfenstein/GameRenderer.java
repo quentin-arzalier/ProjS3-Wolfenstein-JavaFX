@@ -53,12 +53,11 @@ public class GameRenderer extends ImageView {
     private void dispLoop() {
         renderer = new AnimationTimer() {
             private long lastUpdate = 0;
+            private long lastCheck = 0;
+            private long fps = 0;
 
             @Override
             public void handle(long now) {
-
-                // Compteur de fps
-                System.out.println("fps = " + 1_000 / ((now - lastUpdate) / 1_000_000));
                 float posX = currPlayer.getPosX();
                 float posY = currPlayer.getPosY();
                 float vx = currPlayer.getVx();
@@ -87,7 +86,7 @@ public class GameRenderer extends ImageView {
                     int hit = 0;
                     int side = 0;
 
-
+                    // Algorithme de détection des murs
                     while (hit == 0) {
                         if (distX <= distY) {
                             t += distX;
@@ -128,10 +127,12 @@ public class GameRenderer extends ImageView {
                     if (debutSol >= height) debutSol = height - 1;
 
                     int X;
+                    float Y = 0;
+
                     if(side==1) X = (int) (newPosX%1 * texSize);
                     else X = (int) (newPosY%1 * texSize);
-                    double Y = 0;
-                    if(finToit==0) Y = Math.abs(height-wallHeight)/2;
+
+                    if(finToit==0) Y = (float)(wallHeight - height)/2f/(float)wallHeight * texSize;
 
 
 
@@ -144,15 +145,8 @@ public class GameRenderer extends ImageView {
                             color = Color.web("#707070");
                         }
                         else {
-                            if(Y>=64) Y = 63;
-                            color = chooseColor(
-                                    hit,
-                                    side,
-                                    X,
-                                    (int) Y
-                            );
-                            Y+=(double) texSize/(double) wallHeight;
-
+                            color = chooseColor(hit, side, X, (int) Y);
+                            Y += texSize /(double) wallHeight;
                         }
                         changePixel(i, j, color);
                     }
@@ -163,10 +157,14 @@ public class GameRenderer extends ImageView {
                 currPlayer.setMoveSpeed(frameTime * 5);
                 currPlayer.setRotSpeed(frameTime * 3);
                 currPlayer.moveCharacter(worldMap);
+                if (now - lastCheck >= 1_000_000_000) {
+                    fps = 1_000 / ((now - lastUpdate) / 1_000_000);
+                    lastCheck = now;
+                }
+                minimap.update(posX, posY, vx, vy, latX, latY, fps);
 
                 // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
-                minimap.update(posX, posY, vx, vy, latX, latY);
             }
         };
     }
@@ -177,7 +175,7 @@ public class GameRenderer extends ImageView {
      * @return La couleur du mur
      */
     private Color chooseColor(int hit,int side,int X,int Y){
-        return MurType.getById(hit).getTexs(side).getPixelReader().getColor(X,Y);
+        return MurType.getById(hit).getText(side).getPixelReader().getColor(X,Y);
     }
 
 

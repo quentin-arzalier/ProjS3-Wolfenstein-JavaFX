@@ -26,15 +26,15 @@ public class MainApp extends Application {
 
         currPlayer = new Player();
         root = new GridPane();
-
-
         minimap = new Minimap();
-        minimap.setMap("levels/level0.png");
-        root.add(minimap, 3, 0, 2, 1);
-
         game = new GameRenderer(currPlayer, minimap);
+
+
+        minimap.setMap("levels/level0.png");
         game.setMap(new Map("levels/level0.png"));
+
         root.add(game, 0, 0, 4, 1);
+        root.add(minimap, 3, 0, 3, 1);
 
         addButtons();
 
@@ -47,11 +47,16 @@ public class MainApp extends Application {
 
     private void addButtons(){
         Button button;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             button = new Button("Level " + i);
             int finalI = i;
             button.setOnMouseClicked((actionEvent -> changeLevel(finalI)));
-            button.setMinWidth(1280f/4f);
+            if (i < 3){
+                button.setMinWidth(960/3f);
+            }
+            else {
+                button.setMinWidth(200f);
+            }
             button.setMinHeight(100f);
             button.setFocusTraversable(false);
             root.add(button, i, 1, 1, 1);
