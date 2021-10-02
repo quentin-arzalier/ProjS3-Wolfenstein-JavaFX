@@ -13,6 +13,7 @@ public class GameRenderer extends ImageView {
     private final int width;
     private final int height;
     private final Minimap minimap;
+    private final int texSize;
 
     private AnimationTimer renderer;
 
@@ -20,9 +21,11 @@ public class GameRenderer extends ImageView {
         currPlayer = p;
         width = 480;
         height = 360;
+        texSize = 64;
         minimap = map;
         this.setFitWidth(960);
         this.setFitHeight(600);
+
         dispLoop();
     }
 
@@ -124,19 +127,32 @@ public class GameRenderer extends ImageView {
                     int debutSol = wallHeight / 2 + height / 2;
                     if (debutSol >= height) debutSol = height - 1;
 
+                    int X;
+                    if(side==1) X = (int) (newPosX%1 * texSize);
+                    else X = (int) (newPosY%1 * texSize);
+                    double Y = 0;
+                    if(finToit==0) Y = Math.abs(height-wallHeight)/2;
+
+
+
                     for (int j = 0; j < height; j++) {
                         Color color;
                         if (j < finToit){
-                            color = Color.GRAY;
+                            color = Color.web("383838");
                         }
                         else if (j >= debutSol){
-                            color = Color.BLACK;
+                            color = Color.web("#707070");
                         }
                         else {
-                            color = chooseColor(hit);
-                            if (side == 1){
-                                color = color.darker();
-                            }
+                            if(Y>=64) Y = 63;
+                            color = chooseColor(
+                                    hit,
+                                    side,
+                                    X,
+                                    (int) Y
+                            );
+                            Y+=(double) texSize/(double) wallHeight;
+
                         }
                         changePixel(i, j, color);
                     }
@@ -155,25 +171,13 @@ public class GameRenderer extends ImageView {
         };
     }
 
-
     /**
      * Cette méthode permet de savoir de quel couleur est le mur à dessiner
      * @param hit L'identifiant du mur dans la matrice worldMap
      * @return La couleur du mur
      */
-    private Color chooseColor(int hit){
-        switch (hit) {
-            case 1:
-                return Color.RED;
-            case 2:
-                return Color.GREEN;
-            case 3:
-                return Color.BLUE;
-            case 4:
-                return Color.WHITE;
-            default:
-                return Color.YELLOW;
-        }
+    private Color chooseColor(int hit,int side,int X,int Y){
+        return MurType.getById(hit).getTexs(side).getPixelReader().getColor(X,Y);
     }
 
 

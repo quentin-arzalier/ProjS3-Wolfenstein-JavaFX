@@ -37,6 +37,9 @@ public class Map {
                 else if (maCoul.equals(Color.YELLOW)){
                     worldMap[i][j] = 5;
                 }
+                else if (maCoul.equals(Color.PURPLE)){
+                    worldMap[i][j] = 6;
+                }
                 else {
                     worldMap[i][j] = 0;
                 }
