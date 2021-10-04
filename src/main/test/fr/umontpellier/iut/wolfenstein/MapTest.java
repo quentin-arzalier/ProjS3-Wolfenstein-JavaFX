@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MapTest {
@@ -23,8 +25,12 @@ class MapTest {
         // TEST que la méthode getWorldMap retourne bien un tableau de tableau
         // de chiffre 1 représentant l'image complétement rouge (de taille 10px par 10px), rouge.png
         Map map1 = new Map("test/rouge.png");
-        int [][]test = map1.getWorldMap();
+        assertEquals(10,map1.getWidth());
+        assertEquals(10,map1.getHeight());
 
+        int [][]test = map1.getWorldMap();
+        assertTrue(Arrays.stream(test).flatMapToInt(Arrays::stream).allMatch(p -> p == 1));
+        /*
         int[][] ones = new int[10][10];
         for (int i = 0; i < 10 ; i++) {
             for (int j = 0; j < 10; j++) {
@@ -40,6 +46,8 @@ class MapTest {
                 assertEquals(ones[i][j], test[i][j]);
             }
         }
+
+         */
     }
     @Test
     void getWorldMap_vert_Test() {
@@ -47,8 +55,14 @@ class MapTest {
         // TEST que la méthode getWorldMap retourne bien un tableau de tableau
         // de chiffre 2 représentant l'image complétement vert (de taille 10px par 10px), rouge.png
         Map map1 = new Map("test/vert.png");
+        assertEquals(10,map1.getWidth());
+        assertEquals(10,map1.getHeight());
+
         int [][]test = map1.getWorldMap();
-        System.out.println(test[0][0]);
+
+
+        assertTrue(Arrays.stream(test).flatMapToInt(Arrays::stream).allMatch(p -> p == 2));
+        /*
         int[][] ones = new int[10][10];
         for (int i = 0; i < 10 ; i++) {
             for (int j = 0; j < 10; j++) {
@@ -64,5 +78,7 @@ class MapTest {
                 assertEquals(ones[i][j], test[i][j]);
             }
         }
+
+         */
     }
 }
