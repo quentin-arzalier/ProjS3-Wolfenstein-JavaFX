@@ -49,4 +49,12 @@ public class Map {
     public int[][] getWorldMap() {
         return worldMap;
     }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }
