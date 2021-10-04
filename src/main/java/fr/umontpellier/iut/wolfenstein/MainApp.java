@@ -1,6 +1,7 @@
 package fr.umontpellier.iut.wolfenstein;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
@@ -94,7 +95,7 @@ public class MainApp extends Application {
                 currPlayer.setDown(true);
             }
             else if (code == KeyCode.ESCAPE){
-                game.stop();
+                Platform.exit();
             }
             key.consume();
         });

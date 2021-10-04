@@ -1,38 +1,47 @@
 package fr.umontpellier.iut.wolfenstein;
 
 import javafx.animation.AnimationTimer;
-import javafx.scene.image.ImageView;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-public class GameRenderer extends ImageView {
+import java.util.HashMap;
+
+public class GameRenderer extends Pane {
 
     private int[][] worldMap;
-    private WritableImage monImage;
+
+
+    private final WritableImage monImage;
+    private final GraphicsContext context;
     private final Player currPlayer;
-    private final int width;
-    private final int height;
     private final Minimap minimap;
-    private final int texSize;
+
+    private final int texSize = 64;
+    private final int drawWidth = 960;
+    private final int drawHeight = 600;
+    private final int realWidth = 480;
+    private final int realHeight = 300;
 
     private AnimationTimer renderer;
 
     public GameRenderer(Player p, Minimap map){
+        Canvas base = new Canvas(drawWidth, drawHeight);
+        base.setStyle("-fx-background-color: magenta");
         currPlayer = p;
-        width = 480;
-        height = 360;
-        texSize = 64;
         minimap = map;
-        this.setFitWidth(960);
-        this.setFitHeight(600);
-
+        context = base.getGraphicsContext2D();
+        this.getChildren().add(base);
+        context.scale(drawWidth /(float) realWidth, drawHeight /(float) realHeight);
+        context.setImageSmoothing(false);
+        monImage = new WritableImage(realWidth, realHeight);
         dispLoop();
     }
 
     public void setMap(Map map){
         renderer.stop();
-        monImage = new WritableImage(width, height);
-        setImage(monImage);
         worldMap = map.getWorldMap();
         renderer.start();
     }
@@ -65,78 +74,37 @@ public class GameRenderer extends ImageView {
                 float latX = currPlayer.getLatX();
                 float latY = currPlayer.getLatY();
 
-                for (int i = 0; i < width; i++) {
-                    float newPosY = posY;
-                    float newPosX = posX;
-                    float camX = 2 * i / (float) width -1;
+                for (int i = 0; i < realWidth; i++) {
+                    float camX = 2 * i / (float) realWidth -1;
                     float rayDirX = vx + latX * camX;
                     float rayDirY = vy + latY * camX;
 
 
-                    // La distance du mur normalisée
-                    float t = 0;
+                    HashMap<String, Number> ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
 
-                    // Les coordonnées xi et yi permettent de nous localiser dans le plan
-                    int xi = (int) posX;
-                    int yi = (int) posY;
-
-                    float distX = getDist(rayDirX, newPosX);
-                    float distY = getDist(rayDirY, newPosY);
-
-                    int hit = 0;
-                    int side = 0;
-
-                    // Algorithme de détection des murs
-                    while (hit == 0) {
-                        if (distX <= distY) {
-                            t += distX;
-                            if (rayDirX > 0){
-                                xi++;
-                            }
-                            else {
-                                xi--;
-                            }
-                            newPosY = newPosY + distX * rayDirY;
-                            newPosX = newPosX + distX * rayDirX;
-                            side = 0;
-                        }
-                        else {
-                            t += distY;
-                            if (rayDirY > 0){
-                                yi++;
-                            }
-                            else {
-                                yi--;
-                            }
-                            newPosY = newPosY + distY * rayDirY;
-                            newPosX = newPosX + distY * rayDirX;
-                            side = 1;
-                        }
-
-                        distX = getDist(rayDirX, newPosX);
-                        distY = getDist(rayDirY, newPosY);
-
-                        hit = worldMap[xi][yi];
-                    }
-                    int wallHeight = (int) (height / t);
-
-                    int finToit = -wallHeight / 2 + height / 2;
-                    if (finToit < 0) finToit = 0;
-
-                    int debutSol = wallHeight / 2 + height / 2;
-                    if (debutSol >= height) debutSol = height - 1;
+                    float newPosX = ddaInfo.get("newPosX").floatValue();
+                    float newPosY = ddaInfo.get("newPosY").floatValue();
+                    int wallHeight =  ddaInfo.get("wallHeight").intValue();
+                    int hit = ddaInfo.get("hit").intValue();
+                    int side = ddaInfo.get("side").intValue();
 
                     int X;
                     float Y = 0;
+                    float pixelPos = (side == 1) ? newPosX : newPosY;
 
-                    if(side==1) X = (int) (newPosX%1 * texSize);
-                    else X = (int) (newPosY%1 * texSize);
+                    X = (int) ((pixelPos%1) * texSize);
+                    // La formule pour lire la texture dans l'autre sens est :  X = texSize - X - 1;
 
-                    if(finToit==0) Y = (float)(wallHeight - height)/2f/(float)wallHeight * texSize;
+                    if(wallHeight >= realHeight) Y = (float)(wallHeight - realHeight)/2f/(float)wallHeight * texSize;
 
 
+                    int finToit = -wallHeight / 2 + realHeight / 2;
+                    if (finToit < 0) finToit = 0;
 
-                    for (int j = 0; j < height; j++) {
+                    int debutSol = wallHeight / 2 + realHeight / 2;
+                    if (debutSol >= realHeight) debutSol = realHeight - 1;
+
+                    for (int j = 0; j < realHeight; j++) {
                         Color color;
                         if (j < finToit){
                             color = Color.web("383838");
@@ -151,6 +119,7 @@ public class GameRenderer extends ImageView {
                         changePixel(i, j, color);
                     }
                 }
+                context.drawImage(monImage, 0, 0);
 
                 // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
                 float frameTime = (now - lastUpdate) / 1_000_000_000f;
@@ -178,6 +147,69 @@ public class GameRenderer extends ImageView {
         return MurType.getById(hit).getText(side).getPixelReader().getColor(X,Y);
     }
 
+    /**
+     * L'algorithme permettant de calculer la distance d'un mur par rapport au joueur
+     * @param rayDirX Les coordonnées X du vecteur vision actuel
+     * @param rayDirY Les coordonnées Y du vecteur vision actuel
+     * @param posX Les coordonnées X du joueur
+     * @param posY Les coordonnées Y du joueur
+     * @return Une Map contenant toutes les infos nécessaires au remplissage de l'image, identifiées par leur nom
+     */
+    private HashMap<String, Number> startDDA(float rayDirX, float rayDirY, float posX, float posY){
+        float distX = getDist(rayDirX, posX);
+        float distY = getDist(rayDirY, posY);
+        int xi = (int) posX;
+        int yi = (int) posY;
+        float newPosX = posX;
+        float newPosY = posY;
+
+        int hit = 0;
+        int side = 0;
+        float t = 0;
+
+        // Algorithme de détection des murs
+        while (hit == 0) {
+            if (distX <= distY) {
+                t += distX;
+                if (rayDirX > 0){
+                    xi++;
+                }
+                else {
+                    xi--;
+                }
+                newPosY = newPosY + distX * rayDirY;
+                newPosX = newPosX + distX * rayDirX;
+                side = 0;
+            }
+            else {
+                t += distY;
+                if (rayDirY > 0){
+                    yi++;
+                }
+                else {
+                    yi--;
+                }
+                newPosY = newPosY + distY * rayDirY;
+                newPosX = newPosX + distY * rayDirX;
+                side = 1;
+            }
+
+            distX = getDist(rayDirX, newPosX);
+            distY = getDist(rayDirY, newPosY);
+
+            hit = worldMap[xi][yi];
+        }
+
+        HashMap<String, Number> retour = new HashMap<>();
+        retour.put("hit", hit);
+        retour.put("wallHeight", realHeight / t);
+        retour.put("side", side);
+        retour.put("newPosX", newPosX);
+        retour.put("newPosY", newPosY);
+
+        return retour;
+    }
+
 
     /**
      * Cette methode calcule la distance du joueur par rapport au mur en fonction de v sur un axe en particulier
@@ -202,9 +234,5 @@ public class GameRenderer extends ImageView {
             dist = Math.abs(delta / rayDir);
         }
         return dist;
-    }
-
-    public void stop() {
-        renderer.stop();
     }
 }
