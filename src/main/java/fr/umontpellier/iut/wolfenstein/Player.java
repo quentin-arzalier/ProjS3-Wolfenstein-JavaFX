@@ -2,8 +2,12 @@ package fr.umontpellier.iut.wolfenstein;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 
 public class Player {
+
+    // Les informations du joueur pour le multijoueur
+    private Color color;
 
     // La position du joueur dans le quadrillage
     private float posX = 16.5f;
@@ -28,7 +32,9 @@ public class Player {
     private boolean isRight = false;
 
 
-    public Player(){}
+    public Player(Color c){
+        color = c;
+    }
 
     public void resetPos() {
         posX = 16.5f;
@@ -112,6 +118,10 @@ public class Player {
 
     public float getLatY() {
         return latY;
+    }
+
+    public Color getColor() {
+        return color;
     }
 
     public void setMoveSpeed(float moveSpeed) {

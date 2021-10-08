@@ -20,8 +20,8 @@ public class GameRenderer extends Pane {
     private final Minimap minimap;
 
     private final int texSize = 64;
-    private final int drawWidth = 960;
-    private final int drawHeight = 600;
+    private final int drawWidth = 480;
+    private final int drawHeight = 300;
     private final int realWidth = 480;
     private final int realHeight = 300;
 
@@ -130,7 +130,7 @@ public class GameRenderer extends Pane {
                     fps = 1_000 / ((now - lastUpdate) / 1_000_000);
                     lastCheck = now;
                 }
-                minimap.update(posX, posY, vx, vy, latX, latY, fps);
+                minimap.update(fps);
 
                 // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
