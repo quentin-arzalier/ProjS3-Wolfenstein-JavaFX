@@ -4,13 +4,17 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
+
 public class Map {
 
     private final int[][] worldMap;
     private final int width;
     private final int height;
+    private ArrayList<Sprite> sprites;
 
     public Map(String url){
+        sprites = new ArrayList<>();
         Image maMap = new Image(url);
         PixelReader reader = maMap.getPixelReader();
         width = (int) maMap.getWidth();
@@ -38,23 +42,30 @@ public class Map {
                 else if (maCoul.equals(Color.PURPLE)){
                     worldMap[i][j] = 6;
                 }
+                else if (maCoul.equals(Color.SADDLEBROWN)){
+                    sprites.add(new Sprite(i+0.5f, j+0.5f, "barrel"));
+                    worldMap[i][j] = 0;
+                }
+                else if (maCoul.equals(Color.LIGHTGRAY)){
+                    sprites.add(new Sprite(i+0.5f, j+0.5f, "pillar"));
+                    worldMap[i][j] = 0;
+                }
+                else if (maCoul.equals(Color.LIME)){
+                    sprites.add(new Sprite(i+0.5f, j+0.5f, "light"));
+                    worldMap[i][j] = 0;
+                }
                 else {
                     worldMap[i][j] = 0;
                 }
             }
         }
-
     }
 
     public int[][] getWorldMap() {
         return worldMap;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
+    public ArrayList<Sprite> getSprites() {
+        return sprites;
     }
 }

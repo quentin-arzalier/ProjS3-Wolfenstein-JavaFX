@@ -3,15 +3,22 @@ package fr.umontpellier.iut.wolfenstein;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public class GameRenderer extends Pane {
 
     private int[][] worldMap;
+    private float[] ZBuffer;
+    private ArrayList<Sprite> sprites;
 
 
     private final WritableImage monImage;
@@ -19,15 +26,18 @@ public class GameRenderer extends Pane {
     private final Player currPlayer;
     private final Minimap minimap;
 
+
     private final int texSize = 64;
-    private final int drawWidth = 480;
-    private final int drawHeight = 300;
-    private final int realWidth = 480;
-    private final int realHeight = 300;
+    private final int drawWidth = 960;
+    private final int drawHeight = 600;
+    private final int realWidth = 960;
+    private final int realHeight = 600;
+
 
     private AnimationTimer renderer;
 
     public GameRenderer(Player p, Minimap map){
+        ZBuffer = new float[realWidth];
         Canvas base = new Canvas(drawWidth, drawHeight);
         base.setStyle("-fx-background-color: magenta");
         currPlayer = p;
@@ -43,6 +53,7 @@ public class GameRenderer extends Pane {
     public void setMap(Map map){
         renderer.stop();
         worldMap = map.getWorldMap();
+        sprites = map.getSprites();
         renderer.start();
     }
 
@@ -83,6 +94,7 @@ public class GameRenderer extends Pane {
 
                     float newPosX = ddaInfo.get("newPosX").floatValue();
                     float newPosY = ddaInfo.get("newPosY").floatValue();
+                    float t = ddaInfo.get("t").floatValue();
                     int wallHeight =  ddaInfo.get("wallHeight").intValue();
                     int hit = ddaInfo.get("hit").intValue();
                     int side = ddaInfo.get("side").intValue();
@@ -93,7 +105,8 @@ public class GameRenderer extends Pane {
                     float pixelPos = (side == 1) ? newPosX : newPosY;
 
                     X = (int) ((pixelPos%1) * texSize);
-                    // La formule pour lire la texture dans l'autre sens est :  X = texSize - X - 1;
+                    // if (side == 0 && rayDirX > 0) X = texSize - X - 1;
+                    // if (side == 1 && rayDirY < 1) X = texSize - X - 1;
 
                     if(wallHeight >= realHeight) Y = (float)(wallHeight - realHeight)/2f/(float)wallHeight * texSize;
 
@@ -118,6 +131,17 @@ public class GameRenderer extends Pane {
                         }
                         changePixel(i, j, color);
                     }
+                    ZBuffer[i] = t;
+                }
+                for (Sprite s : sprites){
+                    System.out.println("AVANT " + s);
+                }
+                for (Sprite s : sprites){
+                    s.setDist(posX, posY);
+                }
+                Collections.sort(sprites);
+                for (Sprite s : sprites){
+                    System.out.println("APRES " + s);
                 }
                 context.drawImage(monImage, 0, 0);
 
@@ -134,6 +158,7 @@ public class GameRenderer extends Pane {
 
                 // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
+                this.stop();
             }
         };
     }
@@ -168,7 +193,6 @@ public class GameRenderer extends Pane {
         double t = 0;
 
         // Algorithme de détection des murs
-        int i = 0;
         while (hit == 0) {
             if (distX <= distY) {
                 t += distX;
@@ -199,7 +223,6 @@ public class GameRenderer extends Pane {
 
 
             hit = worldMap[xi][yi];
-            i++;
         }
 
         HashMap<String, Number> retour = new HashMap<>();
@@ -216,6 +239,7 @@ public class GameRenderer extends Pane {
         retour.put("side", side);
         retour.put("newPosX", newPosX);
         retour.put("newPosY", newPosY);
+        retour.put("t", t);
 
         return retour;
     }
