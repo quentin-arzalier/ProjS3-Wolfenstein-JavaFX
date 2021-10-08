@@ -100,15 +100,15 @@ public class GameRenderer extends Pane {
                     int side = ddaInfo.get("side").intValue();
 
 
-                    int X;
-                    float Y = 0;
+                    int wallTextX;
+                    float wallTextY = 0;
                     float pixelPos = (side == 1) ? newPosX : newPosY;
 
-                    X = (int) ((pixelPos%1) * texSize);
-                    // if (side == 0 && rayDirX > 0) X = texSize - X - 1;
-                    // if (side == 1 && rayDirY < 1) X = texSize - X - 1;
+                    wallTextX = (int) ((pixelPos%1) * texSize);
+                    // if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
+                    // if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
 
-                    if(wallHeight >= realHeight) Y = (float)(wallHeight - realHeight)/2f/(float)wallHeight * texSize;
+                    if(wallHeight >= realHeight) wallTextY = (float)(wallHeight - realHeight)/2f/(float)wallHeight * texSize;
 
 
                     int finToit = -wallHeight / 2 + realHeight / 2;
@@ -126,23 +126,65 @@ public class GameRenderer extends Pane {
                             color = Color.web("#707070");
                         }
                         else {
-                            color = chooseColor(hit, side, X, (int) Y);
-                            Y += texSize /(double) wallHeight;
+                            color = chooseColor(hit, side, wallTextX, (int) wallTextY);
+                            wallTextY += texSize /(double) wallHeight;
                         }
                         changePixel(i, j, color);
                     }
                     ZBuffer[i] = t;
                 }
                 for (Sprite s : sprites){
-                    System.out.println("AVANT " + s);
-                }
-                for (Sprite s : sprites){
                     s.setDist(posX, posY);
                 }
                 Collections.sort(sprites);
-                for (Sprite s : sprites){
-                    System.out.println("APRES " + s);
+
+                for (Sprite currSprite : sprites) {
+                    float spriteX = currSprite.getPosX() - posX;
+                    float spriteY = currSprite.getPosY() - posY;
+
+                    // JE NE COMPREND PAS CE CODE
+                    double invDet = 1.0 / (latX * vy - vx * latY); //required for correct matrix multiplication
+
+                    double transformX = invDet * (vy * spriteX - vx * spriteY);
+                    double transformY = invDet * (-latY * spriteX + latX * spriteY);
+                    int tailleSprite = Math.abs((int)(realHeight / (transformY)));
+
+                    int spriteScreenX = (int)((realWidth / 2) * (1 + transformX / transformY));
+                    // APRÈS LA JE COMPREND (puis c'est moi qui l'ai écrit t'façons)
+
+                    // On part du milieu de l'écran pour positionner le haut et le bas du sprite puisque tout est centre à l'horizon
+                    int sommetSprite = realHeight / 2 - tailleSprite / 2;
+                    if (sommetSprite < 0) sommetSprite = 0;
+                    int basSprite = realHeight / 2 + tailleSprite / 2;
+                    if (basSprite >= realHeight) basSprite = realHeight - 1;
+
+                    // On part de la position X du sprite sur l'écran pour définir son bord gauche et son bord droit.
+                    int gaucheSprite = spriteScreenX - tailleSprite / 2;
+                    if (gaucheSprite < 0) gaucheSprite = 0;
+                    int droiteSprite = spriteScreenX + tailleSprite / 2;
+                    if (droiteSprite >= realWidth) droiteSprite = realWidth - 1;
+
+                    for (int x = gaucheSprite; x < droiteSprite; x++) {
+                        int texX = (x - (spriteScreenX -tailleSprite / 2)) * 64 / tailleSprite;
+                        if (texX >= 64) texX = 63; // TECHNIQUE DE GOUGNAFIER
+                        if (transformY > 0 && x > 0 && transformY < ZBuffer[x]) {
+                            for (int y = sommetSprite; y < basSprite; y++) {
+                                float texY =(int) ((y-sommetSprite) / (float)(basSprite-sommetSprite)*64);
+                                if (sommetSprite == 0){
+                                    int remainingSize = tailleSprite-realHeight;
+                                    texY = (remainingSize/2f)/realHeight*64 + y/(float)tailleSprite*64;
+                                    if (texY >= 64) texY = 63; // TECHNIQUE DE GOUGNAFIER
+
+                                }
+                                Color color = currSprite.getTex().getPixelReader().getColor(texX, (int)texY);
+                                if (!color.equals(Color.BLACK)){
+                                    changePixel(x, y, color);
+                                }
+                            }
+                        }
+                    }
                 }
+
                 context.drawImage(monImage, 0, 0);
 
                 // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
@@ -158,7 +200,6 @@ public class GameRenderer extends Pane {
 
                 // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
-                this.stop();
             }
         };
     }

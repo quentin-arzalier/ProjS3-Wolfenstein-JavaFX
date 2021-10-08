@@ -30,13 +30,29 @@ public class Sprite implements Comparable<Sprite>{
 
     @Override
     public int compareTo(Sprite o) {
-        int retour = 1;
+        int retour = -1;
         if (o.dist > dist){
-            retour = -1;
+            retour = 1;
         }
         else if (o.dist == dist){
             retour = 0;
         }
         return retour;
+    }
+
+    public float getPosX() {
+        return posX;
+    }
+
+    public float getPosY() {
+        return posY;
+    }
+
+    public Image getTex() {
+        return tex;
+    }
+
+    public float getDist() {
+        return dist;
     }
 }
