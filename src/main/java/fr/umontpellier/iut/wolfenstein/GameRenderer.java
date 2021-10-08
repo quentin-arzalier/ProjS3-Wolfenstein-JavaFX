@@ -79,7 +79,6 @@ public class GameRenderer extends Pane {
                     float rayDirX = vx + latX * camX;
                     float rayDirY = vy + latY * camX;
 
-
                     HashMap<String, Number> ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
 
                     float newPosX = ddaInfo.get("newPosX").floatValue();
@@ -87,6 +86,7 @@ public class GameRenderer extends Pane {
                     int wallHeight =  ddaInfo.get("wallHeight").intValue();
                     int hit = ddaInfo.get("hit").intValue();
                     int side = ddaInfo.get("side").intValue();
+
 
                     int X;
                     float Y = 0;
@@ -156,18 +156,19 @@ public class GameRenderer extends Pane {
      * @return Une Map contenant toutes les infos nécessaires au remplissage de l'image, identifiées par leur nom
      */
     private HashMap<String, Number> startDDA(float rayDirX, float rayDirY, float posX, float posY){
-        float distX = getDist(rayDirX, posX);
-        float distY = getDist(rayDirY, posY);
+        double distX = getDist(rayDirX, posX);
+        double distY = getDist(rayDirY, posY);
         int xi = (int) posX;
         int yi = (int) posY;
-        float newPosX = posX;
-        float newPosY = posY;
+        double newPosX = posX;
+        double newPosY = posY;
 
         int hit = 0;
         int side = 0;
-        float t = 0;
+        double t = 0;
 
         // Algorithme de détection des murs
+        int i = 0;
         while (hit == 0) {
             if (distX <= distY) {
                 t += distX;
@@ -193,16 +194,25 @@ public class GameRenderer extends Pane {
                 newPosX = newPosX + distY * rayDirX;
                 side = 1;
             }
-
             distX = getDist(rayDirX, newPosX);
             distY = getDist(rayDirY, newPosY);
 
+
             hit = worldMap[xi][yi];
+            i++;
         }
 
         HashMap<String, Number> retour = new HashMap<>();
         retour.put("hit", hit);
-        retour.put("wallHeight", realHeight / t);
+        Number wallHeight = realHeight / t;
+        if (wallHeight.doubleValue() % 1 > 0.9999999999){
+            wallHeight = (int) (realHeight / t) + 1;
+        }
+        else {
+            wallHeight = (int) (realHeight / t);
+        }
+
+        retour.put("wallHeight", wallHeight);
         retour.put("side", side);
         retour.put("newPosX", newPosX);
         retour.put("newPosY", newPosY);
@@ -217,9 +227,9 @@ public class GameRenderer extends Pane {
      * @param pos Il s'agit de la position du joueur sur l'axe donné
      * @return La distance normalisée du prochain mur
      */
-    private float getDist(float rayDir, float pos){
-        float dist;
-        float delta;
+    private double getDist(double rayDir, double pos){
+        double dist;
+        double delta;
         if (rayDir == 0) {
             dist = 1000000000000000000f;
         } else {
@@ -232,6 +242,7 @@ public class GameRenderer extends Pane {
                 delta = 1;
             }
             dist = Math.abs(delta / rayDir);
+            //System.out.println("delta = " + delta + ", rayDir = " + rayDir + ", pos = " + pos);
         }
         return dist;
     }

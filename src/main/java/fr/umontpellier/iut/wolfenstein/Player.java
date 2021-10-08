@@ -11,10 +11,10 @@ public class Player {
 
     // Le vecteur direction du joueur
     private float vx = 0;
-    private float vy = -1;
+    private float vy = 1;
 
     // Le vecteur direction de la caméra (perpendiculaire au joueur)
-    private float latX = 1;
+    private float latX = -1;
     private float latY = 0;
 
     // Les vitesses de déplacement du joueur

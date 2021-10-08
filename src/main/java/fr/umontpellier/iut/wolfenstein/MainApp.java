@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
@@ -31,8 +32,9 @@ public class MainApp extends Application {
         game = new GameRenderer(currPlayer, minimap);
 
 
-        minimap.setMap("levels/level0.png");
-        game.setMap(new Map("levels/level0.png"));
+        minimap.setMap("levels/level3.png");
+        game.setMap(new Map("levels/level3.png"));
+
 
         root.add(game, 0, 0, 4, 1);
         root.add(minimap, 3, 0, 3, 1);
