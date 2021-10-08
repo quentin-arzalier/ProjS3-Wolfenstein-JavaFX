@@ -68,4 +68,8 @@ public class Map {
     public ArrayList<Sprite> getSprites() {
         return sprites;
     }
+
+    public void addSprite(Sprite s){
+        this.sprites.add(s);
+    }
 }

@@ -7,7 +7,8 @@ import javafx.scene.paint.Color;
 public class Player {
 
     // Les informations du joueur pour le multijoueur
-    private Color color;
+    private final Color color;
+    private final Sprite sprite;
 
     // La position du joueur dans le quadrillage
     private float posX = 16.5f;
@@ -32,8 +33,9 @@ public class Player {
     private boolean isRight = false;
 
 
-    public Player(Color c){
+    public Player(Color c, int nb){
         color = c;
+        sprite = new Sprite(posX, posY, "player" + nb);
     }
 
     public void resetPos() {
@@ -73,10 +75,12 @@ public class Player {
         if (isUp) {
             if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
             if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
+            sprite.updatePos(posX, posY);
         }
         if (isDown) {
             if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
             if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
+            sprite.updatePos(posX, posY);
         }
     }
 
@@ -130,5 +134,9 @@ public class Player {
 
     public void setRotSpeed(float rotSpeed) {
         this.rotSpeed = rotSpeed;
+    }
+
+    public Sprite getSprite() {
+        return sprite;
     }
 }

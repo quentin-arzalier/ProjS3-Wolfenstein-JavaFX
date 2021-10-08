@@ -30,25 +30,31 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage){
 
-        player1 = new Player(Color.BLUE);
-        // player2 = new Player(Color.RED);
+        player1 = new Player(Color.CYAN,1 );
+        player2 = new Player(Color.RED, 2);
         root = new GridPane();
         minimap = new Minimap();
         game1 = new GameRenderer(player1, minimap);
-        // game2 = new GameRenderer(player2, minimap);
+        game2 = new GameRenderer(player2, minimap);
 
         minimap.addJoueur(player1);
-        // minimap.addJoueur(player2);
+        minimap.addJoueur(player2);
 
         minimap.setMap("levels/level0.png");
-        game1.setMap(new Map("levels/level0.png"));
-        // game2.setMap(new Map("levels/level0.png"));
 
-        // VBox test = new VBox();
-        // test.getChildren().add(game1);
-        // test.getChildren().add(game2);
+        Map p1Map = new Map("levels/level0.png");
+        p1Map.addSprite(player2.getSprite());
+        game1.setMap(p1Map);
 
-        root.add(game1, 0, 0, 4, 1);
+        Map p2Map = new Map("levels/level0.png");
+        p2Map.addSprite(player1.getSprite());
+        game2.setMap(p2Map);
+
+        VBox test = new VBox();
+        test.getChildren().add(game1);
+        test.getChildren().add(game2);
+
+        root.add(test, 0, 0, 4, 1);
         root.add(minimap, 3, 0, 3, 1);
 
         addButtons();
@@ -81,10 +87,10 @@ public class MainApp extends Application {
 
     private void changeLevel(int i){
         game1.setMap(new Map("levels/level" + i + ".png"));
-        //game2.setMap(new Map("levels/level" + i + ".png"));
+        game2.setMap(new Map("levels/level" + i + ".png"));
         minimap.setMap("levels/level" + i + ".png");
         player1.resetPos();
-        //player2.resetPos();
+        player2.resetPos();
     }
 
 
@@ -98,15 +104,13 @@ public class MainApp extends Application {
     private void gameHandlers() {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             KeyCode code = key.getCode();
-            Player currPlayer = player1;
-            /*
+            Player currPlayer;
             if (code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN){
                 currPlayer = player1;
             }
             else {
                 currPlayer = player2;
             }
-            */
             if(code == KeyCode.LEFT || code == KeyCode.Q) {
                 currPlayer.setLeft(true);
             }
@@ -126,15 +130,13 @@ public class MainApp extends Application {
         });
         scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) -> {
             KeyCode code = key.getCode();
-            Player currPlayer = player1;
-            /*
+            Player currPlayer;
             if (code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN){
                 currPlayer = player1;
             }
             else {
                 currPlayer = player2;
             }
-            */
             if (code == KeyCode.LEFT || code == KeyCode.Q) {
                 currPlayer.setLeft(false);
             }

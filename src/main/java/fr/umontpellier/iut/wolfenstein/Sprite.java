@@ -48,11 +48,12 @@ public class Sprite implements Comparable<Sprite>{
         return posY;
     }
 
-    public Image getTex() {
-        return tex;
+    public void updatePos(float posX, float posY){
+        this.posX = posX;
+        this.posY = posY;
     }
 
-    public float getDist() {
-        return dist;
+    public Image getTex() {
+        return tex;
     }
 }

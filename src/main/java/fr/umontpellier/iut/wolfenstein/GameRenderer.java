@@ -28,10 +28,10 @@ public class GameRenderer extends Pane {
 
 
     private final int texSize = 64;
-    private final int drawWidth = 960;
-    private final int drawHeight = 600;
-    private final int realWidth = 960;
-    private final int realHeight = 600;
+    private final int drawWidth = (int)(480*1.5);
+    private final int drawHeight = (int)(300*1.5);
+    private final int realWidth = 480;
+    private final int realHeight = 300;
 
 
     private AnimationTimer renderer;
