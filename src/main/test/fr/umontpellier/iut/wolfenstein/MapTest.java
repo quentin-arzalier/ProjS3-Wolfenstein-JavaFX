@@ -30,24 +30,7 @@ class MapTest {
 
         int [][]test = map1.getWorldMap();
         assertTrue(Arrays.stream(test).flatMapToInt(Arrays::stream).allMatch(p -> p == 1));
-        /*
-        int[][] ones = new int[10][10];
-        for (int i = 0; i < 10 ; i++) {
-            for (int j = 0; j < 10; j++) {
-                ones[i][j] = 1;
-            }
-        }
-        assertEquals(10,map1.getWidth());
-        assertEquals(10,map1.getHeight());
 
-        assertEquals(test.length, ones.length);
-        for (int i = 0; i < 10 ; i++) {
-            for (int j = 0; j < 10; j++) {
-                assertEquals(ones[i][j], test[i][j]);
-            }
-        }
-
-         */
     }
     @Test
     void getWorldMap_vert_Test() {
@@ -62,23 +45,6 @@ class MapTest {
 
 
         assertTrue(Arrays.stream(test).flatMapToInt(Arrays::stream).allMatch(p -> p == 2));
-        /*
-        int[][] ones = new int[10][10];
-        for (int i = 0; i < 10 ; i++) {
-            for (int j = 0; j < 10; j++) {
-                ones[i][j] = 2;
-            }
-        }
-        assertEquals(10,map1.getWidth());
-        assertEquals(10,map1.getHeight());
 
-        assertEquals(test.length, ones.length);
-        for (int i = 0; i < 10 ; i++) {
-            for (int j = 0; j < 10; j++) {
-                assertEquals(ones[i][j], test[i][j]);
-            }
-        }
-
-         */
     }
 }
