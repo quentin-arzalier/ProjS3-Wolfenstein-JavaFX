@@ -54,6 +54,10 @@ public class Map {
                     sprites.add(new Sprite(i+0.5f, j+0.5f, "light"));
                     worldMap[i][j] = 0;
                 }
+                else if (maCoul.equals(Color.AQUA)){
+                    sprites.add(new Sprite(i+0.5f, j+0.5f, "garde"));
+                    worldMap[i][j] = 0;
+                }
                 else {
                     worldMap[i][j] = 0;
                 }
@@ -71,5 +75,13 @@ public class Map {
 
     public void addSprite(Sprite s){
         this.sprites.add(s);
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }
