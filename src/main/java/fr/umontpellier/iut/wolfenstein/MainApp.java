@@ -22,6 +22,8 @@ public class MainApp extends Application {
     private GridPane root;
     private Minimap minimap;
 
+    private final boolean multiplayer = false;
+
 
     public static void main(String[] args) {
         launch(args);
@@ -35,26 +37,31 @@ public class MainApp extends Application {
         root = new GridPane();
         minimap = new Minimap();
         game1 = new GameRenderer(player1, minimap);
-        game2 = new GameRenderer(player2, minimap);
+
 
         minimap.addJoueur(player1);
-        minimap.addJoueur(player2);
 
         minimap.setMap("levels/level0.png");
 
         Map p1Map = new Map("levels/level0.png");
-        p1Map.addSprite(player2.getSprite());
         game1.setMap(p1Map);
 
-        Map p2Map = new Map("levels/level0.png");
-        p2Map.addSprite(player1.getSprite());
-        game2.setMap(p2Map);
+        if (multiplayer){
+            game2 = new GameRenderer(player2, minimap);
+            minimap.addJoueur(player2);
+            Map p2Map = new Map("levels/level0.png");
+            p2Map.addSprite(player1.getSprite());
+            p1Map.addSprite(player2.getSprite());
+            game2.setMap(p2Map);
+            VBox test = new VBox();
+            test.getChildren().add(game1);
+            test.getChildren().add(game2);
+            root.add(test, 0, 0, 4, 1);
+        }
+        else {
+            root.add(game1, 0, 0, 4, 1);
+        }
 
-        VBox test = new VBox();
-        test.getChildren().add(game1);
-        test.getChildren().add(game2);
-
-        root.add(test, 0, 0, 4, 1);
         root.add(minimap, 3, 0, 3, 1);
 
         addButtons();
@@ -87,10 +94,12 @@ public class MainApp extends Application {
 
     private void changeLevel(int i){
         game1.setMap(new Map("levels/level" + i + ".png"));
-        game2.setMap(new Map("levels/level" + i + ".png"));
         minimap.setMap("levels/level" + i + ".png");
         player1.resetPos();
-        player2.resetPos();
+        if (multiplayer){
+            game2.setMap(new Map("levels/level" + i + ".png"));
+            player2.resetPos();
+        }
     }
 
 
@@ -105,11 +114,11 @@ public class MainApp extends Application {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             KeyCode code = key.getCode();
             Player currPlayer;
-            if (code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN){
-                currPlayer = player1;
+            if ((code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN) && multiplayer) {
+                currPlayer = player2;
             }
             else {
-                currPlayer = player2;
+                currPlayer = player1;
             }
             if(code == KeyCode.LEFT || code == KeyCode.Q) {
                 currPlayer.setLeft(true);
@@ -131,11 +140,11 @@ public class MainApp extends Application {
         scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) -> {
             KeyCode code = key.getCode();
             Player currPlayer;
-            if (code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN){
-                currPlayer = player1;
+            if ((code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN) && multiplayer) {
+                currPlayer = player2;
             }
             else {
-                currPlayer = player2;
+                currPlayer = player1;
             }
             if (code == KeyCode.LEFT || code == KeyCode.Q) {
                 currPlayer.setLeft(false);

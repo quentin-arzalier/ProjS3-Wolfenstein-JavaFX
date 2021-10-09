@@ -28,8 +28,8 @@ public class GameRenderer extends Pane {
 
 
     private final int texSize = 64;
-    private final int drawWidth = (int)(480*1.5);
-    private final int drawHeight = (int)(300*1.5);
+    private final int drawWidth = 480*2;
+    private final int drawHeight = 300*2;
     private final int realWidth = 480;
     private final int realHeight = 300;
 
@@ -78,113 +78,12 @@ public class GameRenderer extends Pane {
 
             @Override
             public void handle(long now) {
-                float posX = currPlayer.getPosX();
-                float posY = currPlayer.getPosY();
-                float vx = currPlayer.getVx();
-                float vy = currPlayer.getVy();
-                float latX = currPlayer.getLatX();
-                float latY = currPlayer.getLatY();
 
-                for (int i = 0; i < realWidth; i++) {
-                    float camX = 2 * i / (float) realWidth -1;
-                    float rayDirX = vx + latX * camX;
-                    float rayDirY = vy + latY * camX;
+                // On démarre l'algorithme de dessin des murs
+                drawWalls();
 
-                    HashMap<String, Number> ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
-
-                    float newPosX = ddaInfo.get("newPosX").floatValue();
-                    float newPosY = ddaInfo.get("newPosY").floatValue();
-                    float t = ddaInfo.get("t").floatValue();
-                    int wallHeight =  ddaInfo.get("wallHeight").intValue();
-                    int hit = ddaInfo.get("hit").intValue();
-                    int side = ddaInfo.get("side").intValue();
-
-
-                    int wallTextX;
-                    float wallTextY = 0;
-                    float pixelPos = (side == 1) ? newPosX : newPosY;
-
-                    wallTextX = (int) ((pixelPos%1) * texSize);
-                    // if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
-                    // if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
-
-                    if(wallHeight >= realHeight) wallTextY = (float)(wallHeight - realHeight)/2f/(float)wallHeight * texSize;
-
-
-                    int finToit = -wallHeight / 2 + realHeight / 2;
-                    if (finToit < 0) finToit = 0;
-
-                    int debutSol = wallHeight / 2 + realHeight / 2;
-                    if (debutSol >= realHeight) debutSol = realHeight - 1;
-
-                    for (int j = 0; j < realHeight; j++) {
-                        Color color;
-                        if (j < finToit){
-                            color = Color.web("383838");
-                        }
-                        else if (j >= debutSol){
-                            color = Color.web("#707070");
-                        }
-                        else {
-                            color = chooseColor(hit, side, wallTextX, (int) wallTextY);
-                            wallTextY += texSize /(double) wallHeight;
-                        }
-                        changePixel(i, j, color);
-                    }
-                    ZBuffer[i] = t;
-                }
-                for (Sprite s : sprites){
-                    s.setDist(posX, posY);
-                }
-                Collections.sort(sprites);
-
-                for (Sprite currSprite : sprites) {
-                    float spriteX = currSprite.getPosX() - posX;
-                    float spriteY = currSprite.getPosY() - posY;
-
-                    // JE NE COMPREND PAS CE CODE
-                    double invDet = 1.0 / (latX * vy - vx * latY); //required for correct matrix multiplication
-
-                    double transformX = invDet * (vy * spriteX - vx * spriteY);
-                    double transformY = invDet * (-latY * spriteX + latX * spriteY);
-                    int tailleSprite = Math.abs((int)(realHeight / (transformY)));
-
-                    int spriteScreenX = (int)((realWidth / 2) * (1 + transformX / transformY));
-                    // APRÈS LA JE COMPREND (puis c'est moi qui l'ai écrit t'façons)
-
-                    // On part du milieu de l'écran pour positionner le haut et le bas du sprite puisque tout est centre à l'horizon
-                    int sommetSprite = realHeight / 2 - tailleSprite / 2;
-                    if (sommetSprite < 0) sommetSprite = 0;
-                    int basSprite = realHeight / 2 + tailleSprite / 2;
-                    if (basSprite >= realHeight) basSprite = realHeight - 1;
-
-                    // On part de la position X du sprite sur l'écran pour définir son bord gauche et son bord droit.
-                    int gaucheSprite = spriteScreenX - tailleSprite / 2;
-                    if (gaucheSprite < 0) gaucheSprite = 0;
-                    int droiteSprite = spriteScreenX + tailleSprite / 2;
-                    if (droiteSprite >= realWidth) droiteSprite = realWidth - 1;
-
-                    for (int x = gaucheSprite; x < droiteSprite; x++) {
-                        int texX = (x - (spriteScreenX -tailleSprite / 2)) * 64 / tailleSprite;
-                        if (texX >= 64) texX = 63; // TECHNIQUE DE GOUGNAFIER
-                        if (transformY > 0 && x > 0 && transformY < ZBuffer[x]) {
-                            for (int y = sommetSprite; y < basSprite; y++) {
-                                float texY =(int) ((y-sommetSprite) / (float)(basSprite-sommetSprite)*64);
-                                if (sommetSprite == 0){
-                                    int remainingSize = tailleSprite-realHeight;
-                                    texY = (remainingSize/2f)/realHeight*64 + y/(float)tailleSprite*64;
-                                    if (texY >= 64) texY = 63; // TECHNIQUE DE GOUGNAFIER
-
-                                }
-                                Color color = currSprite.getTex().getPixelReader().getColor(texX, (int)texY);
-                                if (!color.equals(Color.BLACK)){
-                                    changePixel(x, y, color);
-                                }
-                            }
-                        }
-                    }
-                }
-
+                // On démarre l'algorithme de dessin des sprites
+                drawSprites();
                 context.drawImage(monImage, 0, 0);
 
                 // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
@@ -202,6 +101,124 @@ public class GameRenderer extends Pane {
                 lastUpdate = now;
             }
         };
+    }
+
+    private void drawWalls() {
+        float posX = currPlayer.getPosX();
+        float posY = currPlayer.getPosY();
+        float vx = currPlayer.getVx();
+        float vy = currPlayer.getVy();
+        float latX = currPlayer.getLatX();
+        float latY = currPlayer.getLatY();
+
+        for (int i = 0; i < realWidth; i++) {
+            float camX = 2 * i / (float) realWidth -1;
+            float rayDirX = vx + latX * camX;
+            float rayDirY = vy + latY * camX;
+
+            HashMap<String, Number> ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
+
+            float newPosX = ddaInfo.get("newPosX").floatValue();
+            float newPosY = ddaInfo.get("newPosY").floatValue();
+            float t = ddaInfo.get("t").floatValue();
+            int wallHeight =  ddaInfo.get("wallHeight").intValue();
+            int hit = ddaInfo.get("hit").intValue();
+            int side = ddaInfo.get("side").intValue();
+
+
+            int wallTextX;
+            float wallTextY = 0;
+            float pixelPos = (side == 1) ? newPosX : newPosY;
+
+            wallTextX = (int) ((pixelPos%1) * texSize);
+            //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
+            //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
+
+            if(wallHeight >= realHeight) wallTextY = (float)(wallHeight - realHeight)/2f/(float)wallHeight * texSize;
+
+
+            int finToit = -wallHeight / 2 + realHeight / 2;
+            if (finToit < 0) finToit = 0;
+
+            int debutSol = wallHeight / 2 + realHeight / 2;
+            if (debutSol >= realHeight) debutSol = realHeight - 1;
+
+            for (int j = 0; j < realHeight; j++) {
+                Color color;
+                if (j < finToit){
+                    color = Color.web("383838");
+                }
+                else if (j >= debutSol){
+                    color = Color.web("#707070");
+                }
+                else {
+                    color = chooseColor(hit, side, wallTextX, (int) wallTextY);
+                    wallTextY += texSize /(double) wallHeight;
+                }
+                changePixel(i, j, color);
+            }
+            ZBuffer[i] = t;
+        }
+    }
+
+    private void drawSprites() {
+        float posX = currPlayer.getPosX();
+        float posY = currPlayer.getPosY();
+        float latX = currPlayer.getLatX();
+        float latY = currPlayer.getLatY();
+        float vx = currPlayer.getVx();
+        float vy = currPlayer.getVy();
+        for (Sprite s : sprites) {
+            s.setDist(posX, posY);
+        }
+        Collections.sort(sprites);
+        for (Sprite currSprite : sprites) {
+            float spriteX = currSprite.getPosX() - posX;
+            float spriteY = currSprite.getPosY() - posY;
+            int realSpriteHeight = (int) currSprite.getTex().getHeight();
+
+            // JE NE COMPREND PAS CE CODE
+            double invDet = 1.0 / (latX * vy - vx * latY); //required for correct matrix multiplication
+
+            double transformX = invDet * (vy * spriteX - vx * spriteY);
+            double transformY = invDet * (-latY * spriteX + latX * spriteY);
+            int tailleSprite = Math.abs((int) (realHeight / (transformY)));
+
+            int spriteScreenX = (int) ((realWidth / 2) * (1 + transformX / transformY));
+            // APRÈS LA JE COMPREND (puis c'est moi qui l'ai écrit t'façons)
+
+            // On part du milieu de l'écran pour positionner le haut et le bas du sprite puisque tout est centre à l'horizon
+            int sommetSprite = realHeight / 2 - tailleSprite / 2;
+            if (sommetSprite < 0) sommetSprite = 0;
+            int basSprite = realHeight / 2 + tailleSprite / 2;
+            if (basSprite >= realHeight) basSprite = realHeight - 1;
+
+            // On part de la position X du sprite sur l'écran pour définir son bord gauche et son bord droit.
+            int gaucheSprite = spriteScreenX - tailleSprite / 2;
+            if (gaucheSprite < 0) gaucheSprite = 0;
+            int droiteSprite = spriteScreenX + tailleSprite / 2;
+            if (droiteSprite >= realWidth) droiteSprite = realWidth - 1;
+
+            for (int x = gaucheSprite; x < droiteSprite; x++) {
+                int texX = (x - (spriteScreenX - tailleSprite / 2)) * realSpriteHeight / tailleSprite;
+                if (transformY > 0 && x > 0 && transformY < ZBuffer[x]) {
+                    for (int y = sommetSprite; y < basSprite; y++) {
+                        float texY = (y - sommetSprite) /  (float)(basSprite - sommetSprite) * realSpriteHeight;
+                        float missingSize = (tailleSprite-realHeight)/2f/realHeight*realSpriteHeight;
+                        if (missingSize > 32){
+                            texY = 0;
+                        }
+                        else if (missingSize > 0){
+                            texY = missingSize + texY/64*(64-2*missingSize);
+                        }
+                        Color color = currSprite.getTex().getPixelReader().getColor(texX, (int) texY);
+                        if (!color.equals(Color.BLACK)) {
+                            changePixel(x, y, color);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
