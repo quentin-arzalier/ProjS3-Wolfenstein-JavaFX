@@ -107,6 +107,7 @@ public class GameRenderer extends Pane {
         float vy = currPlayer.getVy();
         float latX = currPlayer.getLatX();
         float latY = currPlayer.getLatY();
+        float camPitch = currPlayer.getCamPitch();
 
         for (int i = 0; i < realWidth; i++) {
             float camX = 2 * i / (float) realWidth -1;
@@ -131,13 +132,13 @@ public class GameRenderer extends Pane {
             //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
             //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
 
-            if(wallHeight >= realHeight) wallTextY = (float)(wallHeight - realHeight)/2f/(float)wallHeight * texSize;
+            if(wallHeight >= realHeight) wallTextY += (wallHeight - realHeight) /2f/(float)wallHeight * texSize;
 
 
-            int finToit = -wallHeight / 2 + realHeight / 2;
+            int finToit = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
             if (finToit < 0) finToit = 0;
 
-            int debutSol = wallHeight / 2 + realHeight / 2;
+            int debutSol = wallHeight / 2 + realHeight / 2 + (int)(camPitch);
             if (debutSol >= realHeight) debutSol = realHeight - 1;
 
             for (int j = 0; j < realHeight; j++) {
@@ -229,10 +230,11 @@ public class GameRenderer extends Pane {
             int droiteSprite = screenPosX + demiSprite;
             if (droiteSprite >= realWidth) droiteSprite = realWidth - 1;
 
-            int hautSprite = realHeight/2 - demiSprite;
+            int camPitch = (int)currPlayer.getCamPitch();
+            int hautSprite = realHeight/2 - demiSprite + camPitch;
             if (hautSprite < 0) hautSprite = 0;
-            int basSprite = realHeight/2 + demiSprite;
-            if (basSprite >= realHeight) basSprite = realHeight - 1;
+            int basSprite = realHeight/2 + demiSprite + camPitch;
+            if (basSprite >= realHeight) basSprite = realHeight - 1 ;
 
             // On dessine le sprite
             if (spriteScreenPosX > 0.5){ // On ne dessine le sprite que si il se trouve au moins 0.5 unités devant le joueur
@@ -243,7 +245,7 @@ public class GameRenderer extends Pane {
                     if (spriteScreenPosX < zBuffer[x]){ // On vérifie si la colonne à dessiner se trouve bien devant un mur
                         for (int y = hautSprite; y < basSprite; y++) {
 
-                            int texY = (y - realHeight/2 + tailleSprite/2) * texSize / tailleSprite;
+                            int texY = (y - camPitch - realHeight/2 + tailleSprite/2) * texSize / tailleSprite;
 
                             Color color = currSprite.getTex().getPixelReader().getColor(texX, texY);
                             if (color.getOpacity() != 0){

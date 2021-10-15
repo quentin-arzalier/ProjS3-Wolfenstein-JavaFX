@@ -22,6 +22,9 @@ public class Player {
     private float latX = -1;
     private float latY = 0;
 
+    // La rotation de la caméra vers le haut/le bas
+    private float camPitch = 0;
+
     // Les vitesses de déplacement du joueur
     private float moveSpeed = 0;
     private float rotSpeed = 0;
@@ -31,6 +34,7 @@ public class Player {
     private boolean isDown = false;
     private boolean isLeft = false;
     private boolean isRight = false;
+
 
 
     public Player(Color c, int nb){
@@ -56,22 +60,6 @@ public class Player {
      * On vérifie les états des boolean, et on tourne la caméra/ déplace le joueur en fonction de leur valeurs.
      */
     public void moveCharacter(int[][] worldMap){
-        if(isLeft) {
-            float oldVx = vx;
-            vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
-            vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
-            float oldLatx = latX;
-            latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
-            latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
-        }
-        if (isRight) {
-            float oldVx = vx;
-            vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
-            vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
-            float oldLatx = latX;
-            latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
-            latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
-        }
         if (isUp) {
             if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
             if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
@@ -80,6 +68,16 @@ public class Player {
         if (isDown) {
             if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
             if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
+            sprite.updatePos(posX, posY);
+        }
+        if (isRight){
+            if (worldMap[(int)(posX + latX * moveSpeed)][(int)posY] == 0) posX += latX * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY + latY * moveSpeed)] == 0) posY += latY * moveSpeed;
+            sprite.updatePos(posX, posY);
+        }
+        if (isLeft) {
+            if (worldMap[(int)(posX - latX * moveSpeed)][(int)posY] == 0) posX -= latX * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY - latY * moveSpeed)] == 0) posY -= latY * moveSpeed;
             sprite.updatePos(posX, posY);
         }
     }
@@ -98,6 +96,36 @@ public class Player {
 
     public void setRight(boolean right) {
         isRight = right;
+    }
+
+    public void moveCameraPitch(float offset) {
+        this.camPitch += offset;
+        if (camPitch < -200) camPitch = -200;
+        if (camPitch > 200) camPitch = 200;
+    }
+
+    public void lookLeft(float input){
+        float oldRotSpeed =  rotSpeed;
+        rotSpeed = rotSpeed * Math.abs(input);
+        float oldVx = vx;
+        vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
+        vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
+        float oldLatx = latX;
+        latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
+        latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
+        rotSpeed = oldRotSpeed;
+    }
+
+    public void lookRight(float input){
+        float oldRotSpeed =  rotSpeed;
+        rotSpeed = rotSpeed * Math.abs(input);
+        float oldVx = vx;
+        vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
+        vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
+        float oldLatx = latX;
+        latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
+        latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
+        rotSpeed = oldRotSpeed;
     }
 
     public float getPosX() {
@@ -122,6 +150,10 @@ public class Player {
 
     public float getLatY() {
         return latY;
+    }
+
+    public float getCamPitch(){
+        return camPitch;
     }
 
     public Color getColor() {

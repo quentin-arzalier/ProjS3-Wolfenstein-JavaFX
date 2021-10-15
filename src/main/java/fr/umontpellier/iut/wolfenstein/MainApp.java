@@ -2,14 +2,17 @@ package fr.umontpellier.iut.wolfenstein;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.robot.Robot;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
@@ -67,6 +70,7 @@ public class MainApp extends Application {
         addButtons();
 
         scene = new Scene(root);
+        scene.setCursor(Cursor.NONE);
         primaryStage.setTitle("Projet Wolfenstus 3D");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -120,17 +124,17 @@ public class MainApp extends Application {
             else {
                 currPlayer = player1;
             }
-            if(code == KeyCode.LEFT || code == KeyCode.Q) {
-                currPlayer.setLeft(true);
-            }
-            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
-                currPlayer.setRight(true);
-            }
-            else if (code == KeyCode.UP || code == KeyCode.Z) {
+            if (code == KeyCode.UP || code == KeyCode.Z) {
                 currPlayer.setUp(true);
             }
             else if (code == KeyCode.DOWN || code == KeyCode.S) {
                 currPlayer.setDown(true);
+            }
+            else if(code == KeyCode.LEFT || code == KeyCode.Q) {
+                currPlayer.setLeft(true);
+            }
+            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
+                currPlayer.setRight(true);
             }
             else if (code == KeyCode.ESCAPE){
                 Platform.exit();
@@ -146,19 +150,44 @@ public class MainApp extends Application {
             else {
                 currPlayer = player1;
             }
-            if (code == KeyCode.LEFT || code == KeyCode.Q) {
-                currPlayer.setLeft(false);
-            }
-            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
-                currPlayer.setRight(false);
-            }
-            else if (code == KeyCode.UP || code == KeyCode.Z) {
+            if (code == KeyCode.UP || code == KeyCode.Z) {
                 currPlayer.setUp(false);
             }
             else if (code == KeyCode.DOWN || code == KeyCode.S) {
                 currPlayer.setDown(false);
             }
+            else if(code == KeyCode.LEFT || code == KeyCode.Q) {
+                currPlayer.setLeft(false);
+            }
+            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
+                currPlayer.setRight(false);
+            }
             key.consume();
+        });
+        scene.addEventHandler(MouseEvent.MOUSE_MOVED, (mouse) -> {
+            int milieuX = (int)Screen.getPrimary().getBounds().getWidth()/2;
+            int milieuY = (int)Screen.getPrimary().getBounds().getHeight()/2;
+            if (mouse.getScreenY() > milieuY+1 || mouse.getScreenY() < milieuY-1){
+                player1.moveCameraPitch(-(float)(mouse.getScreenY() - milieuY)*0.8f);
+            }
+            if (mouse.getScreenX() < milieuX - 1){
+                player1.lookLeft((float)(mouse.getScreenX() - milieuX)*0.1f);
+            }
+            else if (mouse.getScreenX() > milieuX + 1){
+                player1.lookRight((float)(mouse.getScreenX() - milieuX)*0.1f);
+            }
+            moveCursor(milieuX, milieuY);
+        });
+    }
+
+    public void moveCursor(int screenX, int screenY) {
+        Platform.runLater(() -> {
+            try {
+                Robot robot = new Robot();
+                robot.mouseMove(screenX, screenY);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 }
