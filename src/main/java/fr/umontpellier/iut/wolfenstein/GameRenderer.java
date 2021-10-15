@@ -3,21 +3,18 @@ package fr.umontpellier.iut.wolfenstein;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.TreeSet;
 
 public class GameRenderer extends Pane {
 
     private int[][] worldMap;
-    private final float[] ZBuffer;
+    private final float[] zBuffer;
     private ArrayList<Sprite> sprites;
 
 
@@ -37,7 +34,7 @@ public class GameRenderer extends Pane {
     private AnimationTimer renderer;
 
     public GameRenderer(Player p, Minimap map){
-        ZBuffer = new float[realWidth];
+        zBuffer = new float[realWidth];
         Canvas base = new Canvas(drawWidth, drawHeight);
         base.setStyle("-fx-background-color: magenta");
         currPlayer = p;
@@ -157,71 +154,11 @@ public class GameRenderer extends Pane {
                 }
                 changePixel(i, j, color);
             }
-            ZBuffer[i] = t;
+            zBuffer[i] = t;
         }
     }
 
-    private void drawSprites() {
-        float posX = currPlayer.getPosX();
-        float posY = currPlayer.getPosY();
-        float latX = currPlayer.getLatX();
-        float latY = currPlayer.getLatY();
-        float vx = currPlayer.getVx();
-        float vy = currPlayer.getVy();
-        for (Sprite s : sprites) {
-            s.setDist(posX, posY);
-        }
-        Collections.sort(sprites);
-        for (Sprite currSprite : sprites) {
-            float spriteX = currSprite.getPosX() - posX;
-            float spriteY = currSprite.getPosY() - posY;
-            int realSpriteHeight = (int) currSprite.getTex().getHeight();
-
-            // JE NE COMPREND PAS CE CODE
-            double invDet = 1.0 / (latX * vy - vx * latY); //required for correct matrix multiplication
-
-            double transformX = invDet * (vy * spriteX - vx * spriteY);
-            double transformY = invDet * (-latY * spriteX + latX * spriteY);
-            int tailleSprite = Math.abs((int) (realHeight / (transformY)));
-
-            int spriteScreenX = (int) ((realWidth / 2) * (1 + transformX / transformY));
-            // APRÈS LA JE COMPREND (puis c'est moi qui l'ai écrit t'façons)
-
-            // On part du milieu de l'écran pour positionner le haut et le bas du sprite puisque tout est centre à l'horizon
-            int sommetSprite = realHeight / 2 - tailleSprite / 2;
-            if (sommetSprite < 0) sommetSprite = 0;
-            int basSprite = realHeight / 2 + tailleSprite / 2;
-            if (basSprite >= realHeight) basSprite = realHeight - 1;
-
-            // On part de la position X du sprite sur l'écran pour définir son bord gauche et son bord droit.
-            int gaucheSprite = spriteScreenX - tailleSprite / 2;
-            if (gaucheSprite < 0) gaucheSprite = 0;
-            int droiteSprite = spriteScreenX + tailleSprite / 2;
-            if (droiteSprite >= realWidth) droiteSprite = realWidth - 1;
-
-            for (int x = gaucheSprite; x < droiteSprite; x++) {
-                int texX = (x - (spriteScreenX - tailleSprite / 2)) * realSpriteHeight / tailleSprite;
-                if (transformY > 0 && x > 0 && transformY < ZBuffer[x]) {
-                    for (int y = sommetSprite; y < basSprite; y++) {
-                        float texY = (y - sommetSprite) /  (float)(basSprite - sommetSprite) * realSpriteHeight;
-                        float missingSize = (tailleSprite-realHeight)/2f/realHeight*realSpriteHeight;
-                        if (missingSize > 32){
-                            texY = 0;
-                        }
-                        else if (missingSize > 0){
-                            texY = missingSize + texY/64*(64-2*missingSize);
-                        }
-                        Color color = currSprite.getTex().getPixelReader().getColor(texX, (int) texY);
-                        if (!color.equals(Color.BLACK)) {
-                            changePixel(x, y, color);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void newDrawSprites(){
+    private void drawSprites(){
         // Coordonnées du point P associées à la position du joueur (Player)
         float posX = currPlayer.getPosX();
         float posY = currPlayer.getPosY();
@@ -246,8 +183,77 @@ public class GameRenderer extends Pane {
             float spritePosY = currSprite.getPosY();
 
             // Coordonnées du vecteur entre les points P et S (PS)
+            // Il s'agit également des coordonnées du sprite dans le plan centré en (posX, posY)
             float vectorX = spritePosX - posX;
             float vectorY = spritePosY - posY;
+
+            /* ON VA SE SERVIR DU SPRINT 2 DE MOD MATHS WOOOOOOOOOOO
+             *
+             *                                                          ( latX vx )
+             * Matrice M du plan d'axes vecteur vision/vecteur caméra : ( latY vy )
+             *
+             * On a donc le système suivant :
+             * { a*latX + b*vx = vectorX
+             * { a*latY + b*vy = vectorY
+             * Que l'on transforme en ce calcul matriciel :
+             * (latX vx)(a) = (vectorX)
+             * (latY vy)(b) = (vectorY)
+             * avec a => la position du sprite latéralement sur l'écran (sur l'axe X, celui du vecteur caméra)
+             * et   b => la profondeur du sprite dans l'écran           (sur l'axe Y, celui du vecteur vision)
+             *
+             * Donnons d le déterminant de la matrice M = latX * vy - vx * latY
+             * Inversons M pour obtenir facilement les valeurs de a et de b :
+             * (vy/d    -vx/d ) (vectorX) = (a)
+             * (-latY/d latX/d) (vectorY) = (b)
+             * On obtient donc le système que l'on peut résoudre tel que voilà :
+             * { (vy*vectorX - vx*vectorY)/d = a
+             * { (latX*vectorY - latY*vectorX)/d = b
+             * Calculons le déterminant de la matrice M du plan pour trouver les coordonnées du sprite dans ce dernier.
+             */
+
+            float d = (latX * vy - vx * latY);
+
+            // On utilise le déterminant pour inverser correctement la matrice et replacer le sprite dans le nouveau plan
+            float spriteScreenPosX = (latX*vectorY - latY*vectorX)/d; // valeur forcément positive
+            float spriteScreenPosY = (vy*vectorX - vx*vectorY)/d;
+
+            // Il faut désormais replacer ces valeurs sur un X de coordonnées realWidth et non mapSize
+            int screenPosX  = (int) ((realWidth / 2) * (1 + spriteScreenPosY / spriteScreenPosX));
+            // La taille en pixels du sprite sur l'écran.
+            int tailleSprite = (int) Math.abs(realHeight / spriteScreenPosX);
+
+            int demiSprite = tailleSprite/2;
+
+            int gaucheSprite = screenPosX - demiSprite;
+            if (gaucheSprite < 0) gaucheSprite = 0;
+            int droiteSprite = screenPosX + demiSprite;
+            if (droiteSprite >= realWidth) droiteSprite = realWidth - 1;
+
+            int hautSprite = realHeight/2 - demiSprite;
+            if (hautSprite < 0) hautSprite = 0;
+            int basSprite = realHeight/2 + demiSprite;
+            if (basSprite >= realHeight) basSprite = realHeight - 1;
+
+            // On dessine le sprite
+            if (spriteScreenPosX > 0.5){ // On ne dessine le sprite que si il se trouve au moins 0.5 unités devant le joueur
+                for (int x = gaucheSprite; x < droiteSprite; x++) {
+
+                    int texX = (x + tailleSprite/2 - screenPosX) * texSize / tailleSprite;
+
+                    if (spriteScreenPosX < zBuffer[x]){ // On vérifie si la colonne à dessiner se trouve bien devant un mur
+                        for (int y = hautSprite; y < basSprite; y++) {
+
+                            int texY = (y - realHeight/2 + tailleSprite/2) * texSize / tailleSprite;
+
+                            Color color = currSprite.getTex().getPixelReader().getColor(texX, texY);
+                            if (color.getOpacity() != 0){
+                                changePixel(x, y, color);
+                            }
+
+                        }
+                    }
+                }
+            }
         }
 
     }
