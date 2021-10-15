@@ -17,7 +17,7 @@ import java.util.TreeSet;
 public class GameRenderer extends Pane {
 
     private int[][] worldMap;
-    private float[] ZBuffer;
+    private final float[] ZBuffer;
     private ArrayList<Sprite> sprites;
 
 
@@ -221,6 +221,37 @@ public class GameRenderer extends Pane {
         }
     }
 
+    private void newDrawSprites(){
+        // Coordonnées du point P associées à la position du joueur (Player)
+        float posX = currPlayer.getPosX();
+        float posY = currPlayer.getPosY();
+
+        // Coordonnées du vecteur vision du joueur
+        float vx = currPlayer.getVx();
+        float vy = currPlayer.getVy();
+
+        // Coordonnées du vecteur caméra du joueur (orthogonal au vecteur vision)
+        float latX = currPlayer.getLatX();
+        float latY = currPlayer.getLatY();
+
+        // On trie les sprites dans l'ordre décroissant des distances au joueur pour afficher les plus proches en dernier (au premier plan)
+        for (Sprite s : sprites) {
+            s.setDist(posX, posY);
+        }
+        Collections.sort(sprites);
+
+        for (Sprite currSprite : sprites) {
+            // Coordonnées du point S associées à la position du sprite
+            float spritePosX = currSprite.getPosX();
+            float spritePosY = currSprite.getPosY();
+
+            // Coordonnées du vecteur entre les points P et S (PS)
+            float vectorX = spritePosX - posX;
+            float vectorY = spritePosY - posY;
+        }
+
+    }
+
     /**
      * Cette méthode permet de savoir de quel couleur est le mur à dessiner
      * @param hit L'identifiant du mur dans la matrice worldMap
@@ -256,23 +287,25 @@ public class GameRenderer extends Pane {
                 t += distX;
                 if (rayDirX > 0){
                     xi++;
+                    newPosX = newPosX + (1 - newPosX%1);
                 }
                 else {
                     xi--;
+                    newPosX = newPosX - (newPosX%1);
                 }
                 newPosY = newPosY + distX * rayDirY;
-                newPosX = newPosX + distX * rayDirX;
                 side = 0;
             }
             else {
                 t += distY;
                 if (rayDirY > 0){
                     yi++;
+                    newPosY = newPosY + (1 - newPosY%1);
                 }
                 else {
                     yi--;
+                    newPosY = newPosY - (newPosY%1);
                 }
-                newPosY = newPosY + distY * rayDirY;
                 newPosX = newPosX + distY * rayDirX;
                 side = 1;
             }
@@ -286,12 +319,6 @@ public class GameRenderer extends Pane {
         HashMap<String, Number> retour = new HashMap<>();
         retour.put("hit", hit);
         Number wallHeight = realHeight / t;
-        if (wallHeight.doubleValue() % 1 > 0.9999999999){
-            wallHeight = (int) (realHeight / t) + 1;
-        }
-        else {
-            wallHeight = (int) (realHeight / t);
-        }
 
         retour.put("wallHeight", wallHeight);
         retour.put("side", side);
