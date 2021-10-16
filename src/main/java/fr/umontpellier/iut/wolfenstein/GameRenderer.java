@@ -76,6 +76,9 @@ public class GameRenderer extends Pane {
             @Override
             public void handle(long now) {
 
+                // On démarre l'algorithme de dessin du sol/plafond
+                drawFloor();
+
                 // On démarre l'algorithme de dessin des murs
                 drawWalls();
 
@@ -136,27 +139,80 @@ public class GameRenderer extends Pane {
 
 
             int finToit = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
-            if (finToit < 0) finToit = 0;
+            if (finToit < 0){
+                //float maxSize = Math.max(wallHeight, realHeight);
+                //float camOffset = (-finToit)/ maxSize *texSize;
+                finToit = 0;
+                //wallTextY += camOffset;
+            }
 
             int debutSol = wallHeight / 2 + realHeight / 2 + (int)(camPitch);
             if (debutSol >= realHeight) debutSol = realHeight - 1;
 
-            for (int j = 0; j < realHeight; j++) {
-                Color color;
-                if (j < finToit){
-                    color = Color.web("383838");
-                }
-                else if (j >= debutSol){
-                    color = Color.web("#707070");
-                }
-                else {
-                    color = chooseColor(hit, side, wallTextX, (int) wallTextY);
-                    wallTextY += texSize /(double) wallHeight;
-                }
+            for (int j = finToit; j < debutSol; j++) {
+                Color color = chooseColor(hit, side, wallTextX, (int) wallTextY);
+                wallTextY += texSize /(double) wallHeight;
                 changePixel(i, j, color);
             }
             zBuffer[i] = t;
         }
+    }
+
+    private void drawFloor(){
+
+        // Informations joueur
+        float posX = currPlayer.getPosX();
+        float posY = currPlayer.getPosY();
+        float vx = currPlayer.getVx();
+        float vy = currPlayer.getVy();
+        float latX = currPlayer.getLatX();
+        float latY = currPlayer.getLatY();
+        float camPitch = currPlayer.getCamPitch();
+
+
+        // La position de l'horizon
+        float horizon = realHeight/2f + camPitch;
+
+        // Le vecteur caméra le plus à gauche (x = 0)
+        float camVectXG = vx - latX;
+        float camVectYG = vy - latY;
+
+        // Le vecteur caméra le plus à droite (x = realWidth)
+        float camVectXD = vx + latX;
+        float camVectYD = vy + latY;
+
+        for (int y = 0; y < realHeight; y++) {
+            // La position de la ligne que l'on dessine en fonction de la ligne d'horizon
+            int scanLineY = y - (int)horizon;
+
+            float rowDist = horizon / scanLineY;
+
+            // Pas permettant de capter la position de la texture du mur/du sol
+            float pasX = rowDist * (camVectXD - camVectXG)/realWidth;
+            float pasY = rowDist * (camVectYD - camVectYG)/realWidth;
+
+            // Les coordonnées réelles de la première colonne :
+            float solX = posX + rowDist * camVectXG;
+            float solY = posY + rowDist * camVectYG;
+
+            // On commence le dessin ligne par ligne
+            for (int x = 0; x < realWidth; x++) {
+                int texX = (int)(texSize * (solX % 1)) & (texSize -1);
+                int texY = (int)(texSize * (solY % 1)) & (texSize -1);
+
+                solX += pasX;
+                solY += pasY;
+                int text = 4;
+                if (y > horizon) text = 2;
+
+                Color color = chooseColor(text, 1, texX, texY);
+
+                changePixel(x, y, color);
+                
+            }
+        }
+
+
     }
 
     private void drawSprites(){
