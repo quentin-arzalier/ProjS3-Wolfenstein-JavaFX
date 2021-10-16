@@ -10,7 +10,10 @@ public enum MurType {
     BOIS(4), //WHITE
     PIERREB(5), //YELLOW
     PORTEM(6), //PURPLE
-    GLASS(7), //PURPLE
+    GLASSNS(7), //Cyan clair
+    GLASSEW(8), //PURPLE
+    GLASSCORNERUP(9), //Cyan clair
+    GLASSCORNERDOWN(10), //Cyan clair
     UNKNOWN(0); //PURPLE
 
     private final int id;
@@ -19,8 +22,10 @@ public enum MurType {
 
     MurType(int id){
         this.id = id;
-        this.tex = new Image("tex/"+this.id+"A.png");
-        this.shadeTex = new Image("tex/"+this.id+"B.png");
+        int texId = this.id;
+        if (id <= 10 && id >= 7) texId = 7;
+        this.tex = new Image("tex/"+texId+"A.png");
+        this.shadeTex = new Image("tex/"+texId+"B.png");
     }
 
     public Image getText(int side) {

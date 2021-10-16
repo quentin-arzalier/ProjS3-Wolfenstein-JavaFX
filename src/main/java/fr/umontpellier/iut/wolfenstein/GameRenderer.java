@@ -133,6 +133,10 @@ public class GameRenderer extends Pane {
                 int hit = ddaInfo.get("hit"+i).intValue();
                 int side = ddaInfo.get("side"+i).intValue();
 
+                if (hit == 7 && side == 0 || hit == 8 && side == 1){
+                    continue;
+                }
+
 
                 int wallTextX;
                 float wallTextY = 0;
@@ -397,14 +401,28 @@ public class GameRenderer extends Pane {
             hit = worldMap[xi][yi];
 
             if (hit != 0){
+                double oldX = newPosX;
+                double oldY = newPosY;
+                if (hit == 9 || hit == 10){
+                    HashMap<String, Number> slopeInfo =  getSlopeDist(rayDirX, rayDirY, newPosX, newPosY, hit, side);
+                    newPosX = slopeInfo.get("newPosX").doubleValue();
+                    newPosY = slopeInfo.get("newPosY").doubleValue();
+                    double distance = slopeInfo.get("distance").doubleValue();
+                    t += distance;
+                }
                 retour.put("hit"+nbHits, hit);
                 retour.put("side"+nbHits, side);
                 Number wallHeight = realHeight / t;
                 retour.put("wallHeight"+nbHits, wallHeight);
                 retour.put("newPosX"+nbHits, newPosX);
                 retour.put("newPosY"+nbHits, newPosY);
-                if (hit == 7) hit = 0;
+                if (hit >= 7 && hit <= 10) {
+                    hit = 0;
+                    newPosX = oldX;
+                    newPosY = oldY;
+                }
                 nbHits++;
+
             }
         }
 
@@ -441,5 +459,86 @@ public class GameRenderer extends Pane {
             //System.out.println("delta = " + delta + ", rayDir = " + rayDir + ", pos = " + pos);
         }
         return dist;
+    }
+
+    private HashMap<String, Number> getSlopeDist(double rayDirX, double rayDirY, double posX, double posY, int hit, int side) {
+
+        // On va utiliser le théorème de Thalès et le théorème de pythagore pour calculer la taille du mur en pente (oui)
+        // Se référer au dessin Slope_wall.png pour comprendre les variables
+        double AB;
+        double BE = 0;
+        double AE;
+        double AC;
+        HashMap<String, Number> retour = new HashMap<>();
+        double newPosX = posX;
+        double newPosY = posY;
+
+
+        if (side == 0) {
+            if (rayDirY < 0){
+                AB = posY % 1;
+            }
+            else  {
+                AB = 1 - posY % 1;
+            }
+            double distX = getDist(rayDirX, newPosX);
+            double distY = getDist(rayDirY, newPosY);
+            BE += distY;
+            while (distX <= distY){
+                if (rayDirX > 0){
+                    newPosX = newPosX + (1 - newPosX%1);
+                }
+                else {
+                    newPosX = newPosX - (newPosX%1);
+                }
+                newPosY = newPosY + rayDirY * distX;
+                distX = getDist(rayDirX, newPosX);
+                distY = getDist(rayDirY, newPosY);
+                BE += distY;
+            }
+            AE = Math.sqrt(AB*AB + BE*BE); // Théorème de pythagore TMTC
+        }
+        else {
+            if (rayDirX < 0){
+                AB = posX % 1;
+            }
+            else  {
+                AB = 1 - posX % 1;
+            }
+            double distX = getDist(rayDirX, newPosX);
+            double distY = getDist(rayDirY, newPosY);
+            BE += distX;
+            while (distY < distX){
+                if (rayDirY > 0){
+                    newPosY = newPosY + (1 - newPosY%1);
+                }
+                else {
+                    newPosY = newPosY - (newPosY%1);
+                }
+                newPosX = newPosX + distY * rayDirX;
+                distX = getDist(rayDirX, newPosX);
+                distY = getDist(rayDirY, newPosY);
+                BE += distX;
+            }
+            AE = Math.sqrt(AB*AB + BE*BE); // Théorème de pythagore TMTC
+        }
+
+        double thalesCoef = AB/(AB+BE);
+        System.out.println("\n Valeurs \n");
+        System.out.println("RayX = " + rayDirX);
+        System.out.println("RayY = " + rayDirY);
+        AC =  AE*thalesCoef;
+        if (rayDirY < 0 && rayDirX > 0 || rayDirX < 0 && rayDirY > 0){
+            AC = 1 - AC;
+        }
+
+        if (hit == 10) AC = 1 - AC;
+
+
+        retour.put("distance", AC);
+        retour.put("newPosX", newPosX);
+        retour.put("newPosY", newPosY);
+
+        return retour;
     }
 }

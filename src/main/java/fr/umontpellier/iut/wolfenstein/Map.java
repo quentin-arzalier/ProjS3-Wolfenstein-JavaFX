@@ -45,11 +45,14 @@ public class Map {
                 else if (maCoul.equals(Color.web("#CCFFFF"))){
                     worldMap[i][j] = 7;
                 }
+                else if (maCoul.equals(Color.web("#33CCCC"))){
+                    worldMap[i][j] = 8;
+                }
                 else if (maCoul.equals(Color.web("#CCFFCC"))){
-                    worldMap[i][j] = 7;
+                    worldMap[i][j] = 9;
                 }
                 else if (maCoul.equals(Color.web("#99CCFF"))){
-                    worldMap[i][j] = 7;
+                    worldMap[i][j] = 10;
                 }
                 else if (maCoul.equals(Color.SADDLEBROWN)){
                     sprites.add(new Sprite(i+0.5f, j+0.5f, "barrel"));
