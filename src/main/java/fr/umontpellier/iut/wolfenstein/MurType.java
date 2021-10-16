@@ -10,6 +10,7 @@ public enum MurType {
     BOIS(4), //WHITE
     PIERREB(5), //YELLOW
     PORTEM(6), //PURPLE
+    GLASS(7), //PURPLE
     UNKNOWN(0); //PURPLE
 
     private final int id;

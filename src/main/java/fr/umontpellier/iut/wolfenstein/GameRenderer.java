@@ -112,49 +112,61 @@ public class GameRenderer extends Pane {
         float latY = currPlayer.getLatY();
         float camPitch = currPlayer.getCamPitch();
 
-        for (int i = 0; i < realWidth; i++) {
-            float camX = 2 * i / (float) realWidth -1;
+        for (int x = 0; x < realWidth; x++) {
+            float camX = 2 * x / (float) realWidth -1;
             float rayDirX = vx + latX * camX;
             float rayDirY = vy + latY * camX;
 
             HashMap<String, Number> ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
 
-            float newPosX = ddaInfo.get("newPosX").floatValue();
-            float newPosY = ddaInfo.get("newPosY").floatValue();
+
+
+            int nbHits = ddaInfo.get("nbHits").intValue();
             float t = ddaInfo.get("t").floatValue();
-            int wallHeight =  ddaInfo.get("wallHeight").intValue();
-            int hit = ddaInfo.get("hit").intValue();
-            int side = ddaInfo.get("side").intValue();
+
+            for (int i = nbHits-1; i >= 0; i--) {
 
 
-            int wallTextX;
-            float wallTextY = 0;
-            float pixelPos = (side == 1) ? newPosX : newPosY;
-
-            wallTextX = (int) ((pixelPos%1) * texSize);
-            //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
-            //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
-
-            if(wallHeight >= realHeight) wallTextY += (wallHeight - realHeight) /2f/(float)wallHeight * texSize;
+                float newPosX = ddaInfo.get("newPosX"+i).floatValue();
+                float newPosY = ddaInfo.get("newPosY"+i).floatValue();
+                int wallHeight =  ddaInfo.get("wallHeight"+i).intValue();
+                int hit = ddaInfo.get("hit"+i).intValue();
+                int side = ddaInfo.get("side"+i).intValue();
 
 
-            int finToit = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
-            if (finToit < 0){
-                //float maxSize = Math.max(wallHeight, realHeight);
-                //float camOffset = (-finToit)/ maxSize *texSize;
-                finToit = 0;
-                //wallTextY += camOffset;
+                int wallTextX;
+                float wallTextY = 0;
+                float pixelPos = (side == 1) ? newPosX : newPosY;
+
+                wallTextX = (int) ((pixelPos%1) * texSize);
+                //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
+                //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
+
+                if(wallHeight >= realHeight) wallTextY += (wallHeight - realHeight) /2f/(float)wallHeight * texSize;
+
+
+                int finToit = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
+                if (finToit < 0){
+                    //float maxSize = Math.max(wallHeight, realHeight);
+                    //float camOffset = (-finToit)/ maxSize *texSize;
+                    finToit = 0;
+                    //wallTextY += camOffset;
+                }
+
+                int debutSol = wallHeight / 2 + realHeight / 2 + (int)(camPitch);
+                if (debutSol >= realHeight) debutSol = realHeight - 1;
+
+                for (int y = finToit; y < debutSol; y++) {
+                    Color color = chooseColor(hit, side, wallTextX, (int)wallTextY);
+                    if (nbHits > 1 && i < nbHits-1){
+                        Color oldColor = monImage.getPixelReader().getColor(x, y);
+                        color = new Color((color.getRed()+oldColor.getRed())/2, (color.getGreen()+oldColor.getGreen())/2, (color.getBlue()+oldColor.getBlue())/2, 1);
+                    }
+                    changePixel(x, y, color);
+                    wallTextY += texSize /(double) wallHeight;
+                }
             }
-
-            int debutSol = wallHeight / 2 + realHeight / 2 + (int)(camPitch);
-            if (debutSol >= realHeight) debutSol = realHeight - 1;
-
-            for (int j = finToit; j < debutSol; j++) {
-                Color color = chooseColor(hit, side, wallTextX, (int) wallTextY);
-                wallTextY += texSize /(double) wallHeight;
-                changePixel(i, j, color);
-            }
-            zBuffer[i] = t;
+            zBuffer[x] = t;
         }
     }
 
@@ -346,8 +358,10 @@ public class GameRenderer extends Pane {
         double newPosY = posY;
 
         int hit = 0;
-        int side = 0;
+        int side;
         double t = 0;
+        HashMap<String, Number> retour = new HashMap<>();
+        int nbHits = 0;
 
         // Algorithme de détection des murs
         while (hit == 0) {
@@ -380,19 +394,24 @@ public class GameRenderer extends Pane {
             distX = getDist(rayDirX, newPosX);
             distY = getDist(rayDirY, newPosY);
 
-
             hit = worldMap[xi][yi];
+
+            if (hit != 0){
+                retour.put("hit"+nbHits, hit);
+                retour.put("side"+nbHits, side);
+                Number wallHeight = realHeight / t;
+                retour.put("wallHeight"+nbHits, wallHeight);
+                retour.put("newPosX"+nbHits, newPosX);
+                retour.put("newPosY"+nbHits, newPosY);
+                if (hit == 7) hit = 0;
+                nbHits++;
+            }
         }
 
-        HashMap<String, Number> retour = new HashMap<>();
-        retour.put("hit", hit);
-        Number wallHeight = realHeight / t;
 
-        retour.put("wallHeight", wallHeight);
-        retour.put("side", side);
-        retour.put("newPosX", newPosX);
-        retour.put("newPosY", newPosY);
+
         retour.put("t", t);
+        retour.put("nbHits", nbHits);
 
         return retour;
     }
