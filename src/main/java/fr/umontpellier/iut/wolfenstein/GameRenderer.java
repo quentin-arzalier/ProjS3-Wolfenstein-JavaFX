@@ -171,7 +171,8 @@ public class GameRenderer extends Pane {
 
 
         // La position de l'horizon
-        float horizon = realHeight/2f + camPitch;
+        float horizon = realHeight/2f;
+
 
         // Le vecteur caméra le plus à gauche (x = 0)
         float camVectXG = vx - latX;
@@ -182,8 +183,11 @@ public class GameRenderer extends Pane {
         float camVectYD = vy + latY;
 
         for (int y = 0; y < realHeight; y++) {
+            boolean isFloor = y > horizon + camPitch;
+
             // La position de la ligne que l'on dessine en fonction de la ligne d'horizon
-            int scanLineY = y - (int)horizon;
+            int scanLineY = y - (int)horizon - (int)camPitch;
+            if (!   isFloor) scanLineY *= -1;
 
             float rowDist = horizon / scanLineY;
 
@@ -203,7 +207,7 @@ public class GameRenderer extends Pane {
                 solX += pasX;
                 solY += pasY;
                 int text = 4;
-                if (y > horizon) text = 2;
+                if (isFloor) text = 2;
 
                 Color color = chooseColor(text, 1, texX, texY);
 
