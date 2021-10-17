@@ -1,11 +1,9 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.reseau;
 
-import fr.umontpellier.iut.wolfenstein.network.WolfClient;
-import fr.umontpellier.iut.wolfenstein.network.WolfServer;
+import fr.umontpellier.iut.wolfenstein.reseau.WolfClient;
+import fr.umontpellier.iut.wolfenstein.reseau.WolfServer;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -18,6 +16,11 @@ import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 
+/**
+ * Toute cette classe ne contient rien d'important dans le cadre du projet, qui avait pour objectif principal de recréer le moteur graphique de
+ * wolfenstein 3D. Il n'est donc probablement pas pertinent pour la correction de celui çi de regarder ce que fait cette classe.
+ * En résumé : Elle gère le menu princpal et communique à MainApp le nombre de joueurs et l'id du joueur actuel.
+ */
 public class MainMenuController extends GridPane {
 
     private IntegerProperty nbPlayers;
@@ -118,7 +121,7 @@ public class MainMenuController extends GridPane {
                 }
                 WolfClient.setInstance(ipField.getText(), this);
                 WolfClient.getInstance().sendCommand("ADDPLAYER");
-                if (WolfClient.getInstance().getPlayerNumber() >2){
+                if (WolfClient.getInstance().getPlayerNumber() >4){
                     System.out.println("Trop de joueurs dans le salon");
                 }
                 else {

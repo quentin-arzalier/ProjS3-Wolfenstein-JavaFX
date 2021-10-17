@@ -1,5 +1,6 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.graphismes;
 
+import fr.umontpellier.iut.wolfenstein.gameplay.Player;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;

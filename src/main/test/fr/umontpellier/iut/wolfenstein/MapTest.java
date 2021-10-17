@@ -1,10 +1,6 @@
 package fr.umontpellier.iut.wolfenstein;
 
-import javafx.application.Platform;
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelReader;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeAll;
+import fr.umontpellier.iut.wolfenstein.gameplay.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,8 +1,6 @@
-package fr.umontpellier.iut.wolfenstein.network;
+package fr.umontpellier.iut.wolfenstein.reseau;
 
-import fr.umontpellier.iut.wolfenstein.MainMenu;
-import fr.umontpellier.iut.wolfenstein.MainMenuController;
-import fr.umontpellier.iut.wolfenstein.Player;
+import fr.umontpellier.iut.wolfenstein.gameplay.Player;
 import javafx.application.Platform;
 
 import java.io.BufferedReader;
@@ -12,8 +10,12 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Toute cette classe ne contient rien d'important dans le cadre du projet, qui avait pour objectif principal de recréer le moteur graphique de
+ * wolfenstein 3D. Il n'est donc probablement pas pertinent pour la correction de celui çi de regarder ce que fait cette classe.
+ * En résumé : Il s'agit du client unique à chaque joueur et lui permettant d'écouter et d'envoyer des messages sur le réseau aux autres joueurs
+ */
 public class WolfClient extends Thread{
 
     private static WolfClient instance;
@@ -28,11 +30,11 @@ public class WolfClient extends Thread{
     private final PrintStream outputStream;
     private final BufferedReader serverResponse;
 
-    public WolfClient(String ipAdress, MainMenuController menu) throws Exception {
+    public WolfClient(String ipAddress, MainMenuController menu) throws Exception {
         this.menu = menu;
         this.isRunning = true;
 
-        InetAddress serveur = InetAddress.getByName(ipAdress);
+        InetAddress serveur = InetAddress.getByName(ipAddress);
         int port = 9632;
 
         Socket socket = new Socket(serveur, port);

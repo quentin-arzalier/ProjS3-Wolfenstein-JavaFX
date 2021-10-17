@@ -1,5 +1,8 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.graphismes;
 
+import fr.umontpellier.iut.wolfenstein.gameplay.MurType;
+import fr.umontpellier.iut.wolfenstein.gameplay.Map;
+import fr.umontpellier.iut.wolfenstein.gameplay.Player;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -23,8 +26,6 @@ public class GameRenderer extends Pane {
     private final Player currPlayer;
     private final Minimap minimap;
 
-    private EnemyInd e;
-
 
     private final int texSize = 64;
     private final int drawWidth = 480*2;
@@ -47,11 +48,6 @@ public class GameRenderer extends Pane {
         context.setImageSmoothing(false);
         monImage = new WritableImage(realWidth, realHeight);
         dispLoop();
-    }
-
-    public void addEnemy(EnemyInd e){
-        this.e =e;
-        sprites.add(e.getSprite());
     }
 
     public void setMap(Map map){
@@ -85,6 +81,11 @@ public class GameRenderer extends Pane {
             @Override
             public void handle(long now) {
 
+                // On actualise le temps local de chaque sprite pour permettre l'animation de ces derniers
+                for (Sprite sprite : sprites){
+                    sprite.setCurrTime(now);
+                }
+
                 // On démarre l'algorithme de dessin du sol/plafond
                 drawFloor();
 
@@ -93,6 +94,9 @@ public class GameRenderer extends Pane {
 
                 // On démarre l'algorithme de dessin des sprites
                 drawSprites();
+
+
+                // On dessine le buffer des pixels à l'écran en une seule fois (réduit le lag)
                 context.drawImage(monImage, 0, 0);
 
                 // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
@@ -100,23 +104,80 @@ public class GameRenderer extends Pane {
                 currPlayer.setMoveSpeed(frameTime * 5);
                 currPlayer.setRotSpeed(frameTime * 3);
                 currPlayer.moveCharacter(worldMap);
-                e.moveEnemy();
+
+                // On calcule les images par seconde une fois par seconde
                 if (now - lastCheck >= 1_000_000_000) {
                     fps = 1_000 / ((now - lastUpdate) / 1_000_000);
                     lastCheck = now;
                 }
                 minimap.update(fps);
-                if (now - lastSpriteCheck >= 100_000_000){
-                    updateSprites();
-                    lastSpriteCheck = now;
-                }
-
                 // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
             }
         };
     }
 
+
+    private void drawFloor(){
+
+        // Informations joueur
+        float posX = currPlayer.getPosX();
+        float posY = currPlayer.getPosY();
+        float vx = currPlayer.getVx();
+        float vy = currPlayer.getVy();
+        float latX = currPlayer.getLatX();
+        float latY = currPlayer.getLatY();
+        float camPitch = currPlayer.getCamPitch();
+
+
+        // La position de l'horizon
+        float horizon = realHeight/2f;
+
+
+        // Le vecteur caméra le plus à gauche (x = 0)
+        float camVectXG = vx - latX;
+        float camVectYG = vy - latY;
+
+        // Le vecteur caméra le plus à droite (x = realWidth)
+        float camVectXD = vx + latX;
+        float camVectYD = vy + latY;
+
+        for (int y = 0; y < realHeight; y++) {
+            boolean isFloor = y > horizon + camPitch;
+
+            // La position de la ligne que l'on dessine en fonction de la ligne d'horizon
+            int scanLineY = y - (int)horizon - (int)camPitch;
+            if (!   isFloor) scanLineY *= -1;
+
+            float rowDist = horizon / scanLineY;
+
+            // Pas permettant de capter la position de la texture du mur/du sol
+            float pasX = rowDist * (camVectXD - camVectXG)/realWidth;
+            float pasY = rowDist * (camVectYD - camVectYG)/realWidth;
+
+            // Les coordonnées réelles de la première colonne :
+            float solX = posX + rowDist * camVectXG;
+            float solY = posY + rowDist * camVectYG;
+
+            // On commence le dessin ligne par ligne
+            for (int x = 0; x < realWidth; x++) {
+                int texX = (int)(texSize * (solX % 1)) & (texSize -1);
+                int texY = (int)(texSize * (solY % 1)) & (texSize -1);
+
+                solX += pasX;
+                solY += pasY;
+                int text = 4;
+                if (isFloor) text = 2;
+
+                Color color = chooseColor(text, 1, texX, texY);
+
+                changePixel(x, y, color);
+
+            }
+        }
+
+
+    }
 
     private void drawWalls() {
         float posX = currPlayer.getPosX();
@@ -189,74 +250,6 @@ public class GameRenderer extends Pane {
         }
     }
 
-    private void drawFloor(){
-
-        // Informations joueur
-        float posX = currPlayer.getPosX();
-        float posY = currPlayer.getPosY();
-        float vx = currPlayer.getVx();
-        float vy = currPlayer.getVy();
-        float latX = currPlayer.getLatX();
-        float latY = currPlayer.getLatY();
-        float camPitch = currPlayer.getCamPitch();
-
-
-        // La position de l'horizon
-        float horizon = realHeight/2f;
-
-
-        // Le vecteur caméra le plus à gauche (x = 0)
-        float camVectXG = vx - latX;
-        float camVectYG = vy - latY;
-
-        // Le vecteur caméra le plus à droite (x = realWidth)
-        float camVectXD = vx + latX;
-        float camVectYD = vy + latY;
-
-        for (int y = 0; y < realHeight; y++) {
-            boolean isFloor = y > horizon + camPitch;
-
-            // La position de la ligne que l'on dessine en fonction de la ligne d'horizon
-            int scanLineY = y - (int)horizon - (int)camPitch;
-            if (!   isFloor) scanLineY *= -1;
-
-            float rowDist = horizon / scanLineY;
-
-            // Pas permettant de capter la position de la texture du mur/du sol
-            float pasX = rowDist * (camVectXD - camVectXG)/realWidth;
-            float pasY = rowDist * (camVectYD - camVectYG)/realWidth;
-
-            // Les coordonnées réelles de la première colonne :
-            float solX = posX + rowDist * camVectXG;
-            float solY = posY + rowDist * camVectYG;
-
-            // On commence le dessin ligne par ligne
-            for (int x = 0; x < realWidth; x++) {
-                int texX = (int)(texSize * (solX % 1)) & (texSize -1);
-                int texY = (int)(texSize * (solY % 1)) & (texSize -1);
-
-                solX += pasX;
-                solY += pasY;
-                int text = 4;
-                if (isFloor) text = 2;
-
-                Color color = chooseColor(text, 1, texX, texY);
-
-                changePixel(x, y, color);
-                
-            }
-        }
-
-
-    }
-
-    private void updateSprites() {
-        for(Sprite e: sprites){
-            if(e instanceof TempEnemy){
-                ((TempEnemy) e).update(worldMap);
-            }
-        }
-    }
 
     private void drawSprites(){
         // Coordonnées du point P associées à la position du joueur (Player)
@@ -456,7 +449,6 @@ public class GameRenderer extends Pane {
 
         return retour;
     }
-
 
     /**
      * Cette methode calcule la distance du joueur par rapport au mur en fonction de v sur un axe en particulier

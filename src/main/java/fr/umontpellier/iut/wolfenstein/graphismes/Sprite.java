@@ -1,15 +1,17 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.graphismes;
 
 import javafx.scene.image.Image;
 
-import java.util.Objects;
-
 public class Sprite implements Comparable<Sprite>{
+
     private float posX;
     private float posY;
     private float dist;
     private String texname;
     private Image tex;
+
+    private int[][] worldmap;
+    private long currTime;
 
     public Sprite(float posX, float posY, String tex) {
         this.posX = posX;
@@ -61,23 +63,23 @@ public class Sprite implements Comparable<Sprite>{
         return tex;
     }
 
-    public void setPosX(float posX) {
-        this.posX = posX;
-    }
-
-    public void setPosY(float posY) {
-        this.posY = posY;
-    }
-
-    public void setDist(float dist) {
-        this.dist = dist;
-    }
-
-    public void setTexname(String texname) {
-        this.texname = texname;
-    }
-
     public void setTex(Image tex) {
         this.tex = tex;
+    }
+
+    public long getCurrTime() {
+        return currTime;
+    }
+
+    public void setCurrTime(long currTime) {
+        this.currTime = currTime;
+    }
+
+    public int[][] getWorldmap() {
+        return worldmap;
+    }
+
+    public void setWorldmap(int[][] worldmap) {
+        this.worldmap = worldmap;
     }
 }
