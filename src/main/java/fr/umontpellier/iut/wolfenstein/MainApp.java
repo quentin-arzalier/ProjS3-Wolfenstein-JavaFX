@@ -22,6 +22,9 @@ public class MainApp extends Application {
     private Scene scene;
     private Player player1;
     private Player player2;
+
+    private EnemyInd garde1;
+
     private GridPane root;
     private Minimap minimap;
 
@@ -37,17 +40,24 @@ public class MainApp extends Application {
 
         player1 = new Player(Color.CYAN,1 );
         player2 = new Player(Color.RED, 2);
+
+        garde1 = new EnemyInd();
+
         root = new GridPane();
         minimap = new Minimap();
         game1 = new GameRenderer(player1, minimap);
 
 
+
         minimap.addJoueur(player1);
+
+     //   minimap.addEnemyInd(garde1);
 
         minimap.setMap("levels/level0.png");
 
         Map p1Map = new Map("levels/level0.png");
         game1.setMap(p1Map);
+        game1.addEnemy(garde1);
 
         if (multiplayer){
             game2 = new GameRenderer(player2, minimap);
@@ -79,6 +89,8 @@ public class MainApp extends Application {
         game1.setMap(new Map("levels/level" + i + ".png"));
         minimap.setMap("levels/level" + i + ".png");
         player1.resetPos();
+        garde1.resetPos();
+        game1.addEnemy(garde1);
         if (multiplayer){
             game2.setMap(new Map("levels/level" + i + ".png"));
             player2.resetPos();

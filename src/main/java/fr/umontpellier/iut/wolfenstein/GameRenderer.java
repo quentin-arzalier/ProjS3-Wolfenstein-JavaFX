@@ -23,6 +23,8 @@ public class GameRenderer extends Pane {
     private final Player currPlayer;
     private final Minimap minimap;
 
+    private EnemyInd e;
+
 
     private final int texSize = 64;
     private final int drawWidth = 480*2;
@@ -45,6 +47,11 @@ public class GameRenderer extends Pane {
         context.setImageSmoothing(false);
         monImage = new WritableImage(realWidth, realHeight);
         dispLoop();
+    }
+
+    public void addEnemy(EnemyInd e){
+        this.e =e;
+        sprites.add(e.getSprite());
     }
 
     public void setMap(Map map){
@@ -91,6 +98,7 @@ public class GameRenderer extends Pane {
                 currPlayer.setMoveSpeed(frameTime * 5);
                 currPlayer.setRotSpeed(frameTime * 3);
                 currPlayer.moveCharacter(worldMap);
+                e.moveEnemy();
                 if (now - lastCheck >= 1_000_000_000) {
                     fps = 1_000 / ((now - lastUpdate) / 1_000_000);
                     lastCheck = now;
