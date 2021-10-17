@@ -80,6 +80,8 @@ public class GameRenderer extends Pane {
             private long lastCheck = 0;
             private long fps = 0;
 
+            private long lastSpriteCheck = 0;
+
             @Override
             public void handle(long now) {
 
@@ -104,12 +106,17 @@ public class GameRenderer extends Pane {
                     lastCheck = now;
                 }
                 minimap.update(fps);
+                if (now - lastSpriteCheck >= 100_000_000){
+                    updateSprites();
+                    lastSpriteCheck = now;
+                }
 
                 // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
                 lastUpdate = now;
             }
         };
     }
+
 
     private void drawWalls() {
         float posX = currPlayer.getPosX();
@@ -241,6 +248,14 @@ public class GameRenderer extends Pane {
         }
 
 
+    }
+
+    private void updateSprites() {
+        for(Sprite e: sprites){
+            if(e instanceof TempEnemy){
+                ((TempEnemy) e).update(worldMap);
+            }
+        }
     }
 
     private void drawSprites(){
