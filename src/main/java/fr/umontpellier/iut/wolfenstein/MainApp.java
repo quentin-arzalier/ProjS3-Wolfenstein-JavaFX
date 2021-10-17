@@ -1,27 +1,38 @@
 package fr.umontpellier.iut.wolfenstein;
 
+import fr.umontpellier.iut.wolfenstein.network.WolfClient;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.robot.Robot;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 public class MainApp extends Application {
 
-    private GameRenderer game1;
-    private GameRenderer game2;
+
+    private MainMenu mainMenu;
+    private Stage primaryStage;
+
+    private IntegerProperty nbPlayers;
+    private IntegerProperty currPlayerID;
+
+
+    private GameRenderer game;
     private Scene scene;
-    private Player player1;
-    private Player player2;
+    private Player currPlayer;
 
     private EnemyInd garde1;
 
@@ -30,50 +41,74 @@ public class MainApp extends Application {
 
     private final boolean multiplayer = false;
 
+    private final InvalidationListener whenPlayerAmountSet = change -> startGame();
+
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    @Override
-    public void start(Stage primaryStage){
 
-        player1 = new Player(Color.CYAN,1 );
-        player2 = new Player(Color.RED, 2);
+    @Override
+    public void start(Stage stage){
+        this.primaryStage = stage;
+        this.nbPlayers = new SimpleIntegerProperty(0);
+        this.currPlayerID = new SimpleIntegerProperty(0);
+        stage.setTitle("Wolfenstus 3D");
+        nbPlayers.addListener(whenPlayerAmountSet);
+        mainMenu = new MainMenu(nbPlayers, currPlayerID);
+        mainMenu.initialize(null, null);
+    }
+
+    public void startGame(){
+        mainMenu.close();
+
+        Player player1 = new Player(Color.CYAN,1);
+        Player player2 = new Player(Color.RED, 2);
+
+        if (currPlayerID.getValue() == 1){
+            currPlayer = player1;
+        } else {
+            currPlayer = player2;
+        }
+
+
 
         garde1 = new EnemyInd();
 
         root = new GridPane();
         minimap = new Minimap();
-        game1 = new GameRenderer(player1, minimap);
+        game = new GameRenderer(currPlayer, minimap);
+
+        minimap.addJoueur(currPlayer);
 
 
+        Map myMap = new Map("levels/level0.png");
+        game.setMap(myMap);
+        game.addEnemy(garde1);
 
-        minimap.addJoueur(player1);
+
+        if (nbPlayers.getValue() > 1){
+            player1.setMultiplayer();
+            player2.setMultiplayer();
+            Player otherPlayer = player2;
+            if (currPlayerID.getValue() == 2){
+                otherPlayer = player1;
+            }
+            minimap.addJoueur(otherPlayer);
+            myMap.addSprite(otherPlayer.getSprite());
+            ArrayList<Player> players = new ArrayList<>();
+            players.add(player1);
+            players.add(player2);
+            WolfClient.getInstance().setPlayers(players);
+        }
 
      //   minimap.addEnemyInd(garde1);
 
         minimap.setMap("levels/level0.png");
 
-        Map p1Map = new Map("levels/level0.png");
-        game1.setMap(p1Map);
-        game1.addEnemy(garde1);
 
-        if (multiplayer){
-            game2 = new GameRenderer(player2, minimap);
-            minimap.addJoueur(player2);
-            Map p2Map = new Map("levels/level0.png");
-            p2Map.addSprite(player1.getSprite());
-            p1Map.addSprite(player2.getSprite());
-            game2.setMap(p2Map);
-            VBox test = new VBox();
-            test.getChildren().add(game1);
-            test.getChildren().add(game2);
-            root.add(test, 0, 0, 4, 1);
-        }
-        else {
-            root.add(game1, 0, 0, 4, 1);
-        }
+        root.add(game, 0, 0, 4, 1);
 
         root.add(minimap, 4, 0, 3, 1);
 
@@ -86,15 +121,11 @@ public class MainApp extends Application {
     }
 
     private void changeLevel(int i){
-        game1.setMap(new Map("levels/level" + i + ".png"));
+        game.setMap(new Map("levels/level" + i + ".png"));
         minimap.setMap("levels/level" + i + ".png");
-        player1.resetPos();
+        currPlayer.resetPos();
         garde1.resetPos();
-        game1.addEnemy(garde1);
-        if (multiplayer){
-            game2.setMap(new Map("levels/level" + i + ".png"));
-            player2.resetPos();
-        }
+        game.addEnemy(garde1);
     }
 
 
@@ -108,13 +139,6 @@ public class MainApp extends Application {
     private void gameHandlers() {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             KeyCode code = key.getCode();
-            Player currPlayer;
-            if ((code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN) && multiplayer) {
-                currPlayer = player2;
-            }
-            else {
-                currPlayer = player1;
-            }
             if (code == KeyCode.UP || code == KeyCode.Z) {
                 currPlayer.setUp(true);
             }
@@ -152,13 +176,6 @@ public class MainApp extends Application {
         });
         scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) -> {
             KeyCode code = key.getCode();
-            Player currPlayer;
-            if ((code == KeyCode.LEFT ||code == KeyCode.RIGHT ||code == KeyCode.UP ||code == KeyCode.DOWN) && multiplayer) {
-                currPlayer = player2;
-            }
-            else {
-                currPlayer = player1;
-            }
             if (code == KeyCode.UP || code == KeyCode.Z) {
                 currPlayer.setUp(false);
             }
@@ -177,13 +194,13 @@ public class MainApp extends Application {
             int milieuX = (int)Screen.getPrimary().getBounds().getWidth()/2;
             int milieuY = (int)Screen.getPrimary().getBounds().getHeight()/2;
             if (mouse.getScreenY() > milieuY+1 || mouse.getScreenY() < milieuY-1){
-                player1.moveCameraPitch(-(float)(mouse.getScreenY() - milieuY)*0.8f);
+                currPlayer.moveCameraPitch(-(float)(mouse.getScreenY() - milieuY)*0.8f);
             }
             if (mouse.getScreenX() < milieuX - 1){
-                player1.lookLeft((float)(mouse.getScreenX() - milieuX)*0.1f);
+                currPlayer.lookLeft((float)(mouse.getScreenX() - milieuX)*0.1f);
             }
             else if (mouse.getScreenX() > milieuX + 1){
-                player1.lookRight((float)(mouse.getScreenX() - milieuX)*0.1f);
+                currPlayer.lookRight((float)(mouse.getScreenX() - milieuX)*0.1f);
             }
             moveCursor(milieuX, milieuY);
         });

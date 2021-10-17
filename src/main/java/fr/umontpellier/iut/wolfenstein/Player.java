@@ -1,5 +1,7 @@
 package fr.umontpellier.iut.wolfenstein;
 
+import fr.umontpellier.iut.wolfenstein.network.WolfClient;
+import fr.umontpellier.iut.wolfenstein.network.WolfServer;
 import javafx.animation.AnimationTimer;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -36,10 +38,19 @@ public class Player {
     private boolean isRight = false;
 
 
+    private final int playerID;
+
+    private boolean isMultiplayer = false;
+
 
     public Player(Color c, int nb){
         color = c;
         sprite = new Sprite(posX, posY, "player" + nb);
+        playerID = nb;
+    }
+
+    public void setMultiplayer(){
+        isMultiplayer = true;
     }
 
     public void resetPos() {
@@ -80,6 +91,7 @@ public class Player {
             if (worldMap[(int)posX][(int)(posY - latY * moveSpeed)] == 0) posY -= latY * moveSpeed;
             sprite.updatePos(posX, posY);
         }
+        if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString());
     }
 
     public void setUp(boolean up) {
@@ -114,6 +126,8 @@ public class Player {
         latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
         latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
         rotSpeed = oldRotSpeed;
+
+        if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString());
     }
 
     public void lookRight(float input){
@@ -126,6 +140,8 @@ public class Player {
         latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
         latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
         rotSpeed = oldRotSpeed;
+
+        if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString());
     }
 
     public float getPosX() {
@@ -170,5 +186,21 @@ public class Player {
 
     public Sprite getSprite() {
         return sprite;
+    }
+
+    public String getPosAsString(){
+        return "PLAYERPOS" + playerID + ":" + posX + ", " + posY + ", " + vx + ", " + vy + ", " + latX + ", " + latY;
+    }
+
+    public void setPosWithString(String posString){
+        String list = posString.split(":")[1];
+        String[] info = list.split(", ");
+        this.posX = Float.parseFloat(info[0]);
+        this.posY = Float.parseFloat(info[1]);
+        this.vx = Float.parseFloat(info[2]);
+        this.vy = Float.parseFloat(info[3]);
+        this.latX = Float.parseFloat(info[4]);
+        this.latY = Float.parseFloat(info[5]);
+        sprite.updatePos(posX, posY);
     }
 }
