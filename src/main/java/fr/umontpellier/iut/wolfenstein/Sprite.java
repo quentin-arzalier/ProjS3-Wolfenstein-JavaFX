@@ -30,19 +30,8 @@ public class Sprite implements Comparable<Sprite>{
 
     public void setDist(float playerX, float playerY){
         dist = (playerX - posX) * (playerX - posX) + (playerY - posY) * (playerY - posY);
-        Enemie(playerX,playerY);
-
     }
 
-    public void Enemie(float playerX, float playerY){
-        if(Objects.equals(texname, "garde")) {
-            if (playerY - posY > 0) {
-                this.tex = new Image("sprites/" + "garde2" + ".png");
-            } else {
-                this.tex = new Image("sprites/" + "garde" + ".png");
-            }
-        }
-    }
     @Override
     public int compareTo(Sprite o) {
         int retour = -1;
@@ -70,5 +59,25 @@ public class Sprite implements Comparable<Sprite>{
 
     public Image getTex() {
         return tex;
+    }
+
+    public void setPosX(float posX) {
+        this.posX = posX;
+    }
+
+    public void setPosY(float posY) {
+        this.posY = posY;
+    }
+
+    public void setDist(float dist) {
+        this.dist = dist;
+    }
+
+    public void setTexname(String texname) {
+        this.texname = texname;
+    }
+
+    public void setTex(Image tex) {
+        this.tex = tex;
     }
 }
