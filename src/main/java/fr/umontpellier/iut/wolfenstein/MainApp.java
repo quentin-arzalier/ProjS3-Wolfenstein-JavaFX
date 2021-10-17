@@ -65,9 +65,7 @@ public class MainApp extends Application {
             root.add(game1, 0, 0, 4, 1);
         }
 
-        root.add(minimap, 3, 0, 3, 1);
-
-        addButtons();
+        root.add(minimap, 4, 0, 3, 1);
 
         scene = new Scene(root);
         scene.setCursor(Cursor.NONE);
@@ -75,25 +73,6 @@ public class MainApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         gameHandlers();
-    }
-
-    private void addButtons(){
-        Button button;
-        for (int i = 0; i < 6; i++) {
-            button = new Button("Level " + i);
-            int finalI = i;
-            button.setOnMouseClicked((actionEvent -> changeLevel(finalI)));
-            if (i < 3){
-                button.setMinWidth(960/3f);
-            }
-            else {
-                button.setMinWidth(200f);
-            }
-            button.setMinHeight(100f);
-            button.setFocusTraversable(false);
-            root.add(button, i, 1, 1, 1);
-            
-        }
     }
 
     private void changeLevel(int i){
@@ -135,6 +114,24 @@ public class MainApp extends Application {
             }
             else if (code == KeyCode.RIGHT || code == KeyCode.D) {
                 currPlayer.setRight(true);
+            }
+            else if (code == KeyCode.NUMPAD0) {
+                changeLevel(0);
+            }
+            else if (code == KeyCode.NUMPAD1) {
+                changeLevel(1);
+            }
+            else if (code == KeyCode.NUMPAD2) {
+                changeLevel(2);
+            }
+            else if (code == KeyCode.NUMPAD3) {
+                changeLevel(3);
+            }
+            else if (code == KeyCode.NUMPAD4) {
+                changeLevel(4);
+            }
+            else if (code == KeyCode.NUMPAD5) {
+                changeLevel(5);
             }
             else if (code == KeyCode.ESCAPE){
                 Platform.exit();

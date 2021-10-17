@@ -524,9 +524,6 @@ public class GameRenderer extends Pane {
         }
 
         double thalesCoef = AB/(AB+BE);
-        System.out.println("\n Valeurs \n");
-        System.out.println("RayX = " + rayDirX);
-        System.out.println("RayY = " + rayDirY);
         AC =  AE*thalesCoef;
         if (rayDirY < 0 && rayDirX > 0 || rayDirX < 0 && rayDirY > 0){
             AC = 1 - AC;
