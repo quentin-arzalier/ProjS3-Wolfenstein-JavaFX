@@ -76,8 +76,6 @@ public class GameRenderer extends Pane {
             private long lastCheck = 0;
             private long fps = 0;
 
-            private long lastSpriteCheck = 0;
-
             @Override
             public void handle(long now) {
 
@@ -222,15 +220,11 @@ public class GameRenderer extends Pane {
                 //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
                 //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
 
-                if(wallHeight >= realHeight) wallTextY += (wallHeight - realHeight) /2f/(float)wallHeight * texSize;
-
-
                 int finToit = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
+
                 if (finToit < 0){
-                    //float maxSize = Math.max(wallHeight, realHeight);
-                    //float camOffset = (-finToit)/ maxSize *texSize;
+                    wallTextY = -finToit/(float)wallHeight*texSize;
                     finToit = 0;
-                    //wallTextY += camOffset;
                 }
 
                 int debutSol = wallHeight / 2 + realHeight / 2 + (int)(camPitch);

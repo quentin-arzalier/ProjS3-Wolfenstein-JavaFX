@@ -69,24 +69,25 @@ public class Player {
      * On vérifie les états des boolean, et on tourne la caméra/ déplace le joueur en fonction de leur valeurs.
      */
     public void moveCharacter(int[][] worldMap){
+        float checkMovespeed = moveSpeed * 2;
         if (isUp) {
-            if (worldMap[(int)(posX + vx * moveSpeed)][(int)posY] == 0) posX += vx * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY + vy * moveSpeed)] == 0) posY += vy * moveSpeed;
+            if (worldMap[(int)(posX + vx * checkMovespeed)][(int)posY] == 0) posX += vx * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY + vy * checkMovespeed)] == 0) posY += vy * moveSpeed;
             sprite.updatePos(posX, posY);
         }
         if (isDown) {
-            if (worldMap[(int)(posX - vx * moveSpeed)][(int)posY] == 0) posX -= vx * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY - vy * moveSpeed)] == 0) posY -= vy * moveSpeed;
+            if (worldMap[(int)(posX - vx * checkMovespeed)][(int)posY] == 0) posX -= vx * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY - vy * checkMovespeed)] == 0) posY -= vy * moveSpeed;
             sprite.updatePos(posX, posY);
         }
         if (isRight){
-            if (worldMap[(int)(posX + latX * moveSpeed)][(int)posY] == 0) posX += latX * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY + latY * moveSpeed)] == 0) posY += latY * moveSpeed;
+            if (worldMap[(int)(posX + latX * checkMovespeed)][(int)posY] == 0) posX += latX * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY + latY * checkMovespeed)] == 0) posY += latY * moveSpeed;
             sprite.updatePos(posX, posY);
         }
         if (isLeft) {
-            if (worldMap[(int)(posX - latX * moveSpeed)][(int)posY] == 0) posX -= latX * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY - latY * moveSpeed)] == 0) posY -= latY * moveSpeed;
+            if (worldMap[(int)(posX - latX * checkMovespeed)][(int)posY] == 0) posX -= latX * moveSpeed;
+            if (worldMap[(int)posX][(int)(posY - latY * checkMovespeed)] == 0) posY -= latY * moveSpeed;
             sprite.updatePos(posX, posY);
         }
         if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString());
