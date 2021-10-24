@@ -1,4 +1,4 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.gameplay;
 
 import javafx.scene.image.Image;
 

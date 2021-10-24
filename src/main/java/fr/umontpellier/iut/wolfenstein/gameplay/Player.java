@@ -1,9 +1,7 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.gameplay;
 
-import fr.umontpellier.iut.wolfenstein.network.WolfClient;
-import fr.umontpellier.iut.wolfenstein.network.WolfServer;
-import javafx.animation.AnimationTimer;
-import javafx.scene.image.WritableImage;
+import fr.umontpellier.iut.wolfenstein.graphismes.Sprite;
+import fr.umontpellier.iut.wolfenstein.reseau.WolfClient;
 import javafx.scene.paint.Color;
 
 public class Player {

@@ -1,9 +1,7 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.gameplay;
 
-import javafx.beans.InvalidationListener;
+import fr.umontpellier.iut.wolfenstein.reseau.MainMenuController;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;

@@ -1,5 +1,7 @@
-package fr.umontpellier.iut.wolfenstein;
+package fr.umontpellier.iut.wolfenstein.gameplay;
 
+import fr.umontpellier.iut.wolfenstein.graphismes.Enemy;
+import fr.umontpellier.iut.wolfenstein.graphismes.Sprite;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.paint.Color;
@@ -68,13 +70,15 @@ public class Map {
                 }
                 else if (maCoul.equals(Color.AQUA)){
                     sprites.add(new Enemy(i+0.5f, j+0.5f, "garde"));
-                    sprites.add(new TempEnemy(i+0.5f, j+0.5f, "nazimpostor"));
                     worldMap[i][j] = 0;
                 }
                 else {
                     worldMap[i][j] = 0;
                 }
             }
+        }
+        for (Sprite sprite : sprites){
+            sprite.setWorldmap(this.worldMap);
         }
     }
 
