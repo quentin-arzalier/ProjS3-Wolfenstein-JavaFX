@@ -92,8 +92,16 @@ public class MainApp extends Application {
         game.setMap(createMap(0));
 
 
+        setupWindow();
 
+        // Finalement, on déclare le système de gestion d'entrées utilisateur
+        gameHandlers();
+    }
 
+    /**
+     * Cette méthode est responsable de la création du layout de l'application.
+     */
+    private void setupWindow() {
         // On colle horizontalement le moteur de jeu et la minimap sur la fenêtre de l'application
         HBox root = new HBox();
         root.getChildren().add(game);
@@ -105,9 +113,6 @@ public class MainApp extends Application {
         primaryStage.setTitle("Wolfenstus 3D");
         primaryStage.setScene(scene);
         primaryStage.show();
-
-        // Finalement, on déclare le système de gestion d'entrées utilisateur
-        gameHandlers();
     }
 
     /**

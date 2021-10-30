@@ -39,7 +39,6 @@ public class GameRenderer extends Pane {
     public GameRenderer(Player p, Minimap map){
         zBuffer = new float[realWidth];
         Canvas base = new Canvas(drawWidth, drawHeight);
-        base.setStyle("-fx-background-color: magenta");
         currPlayer = p;
         minimap = map;
         context = base.getGraphicsContext2D();
