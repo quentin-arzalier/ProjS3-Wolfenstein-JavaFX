@@ -2,13 +2,23 @@ package fr.umontpellier.iut.wolfenstein.graphismes;
 
 import javafx.scene.image.Image;
 
+/**
+ * Cette classe étend la classe Sprite, qui prend déjà en charge les éléments à dessiner qui ne sont pas des murs.
+ * Elle permet d'altérer le comportement d'un sprite et de le rendre capable de mouvement ou d'affichage en plusieurs directions:
+ * Ce sont les ennemis.
+ */
+
+
 public class Enemy extends Sprite{
 
+    /** Définit la frame actuelle de l'animation */
     private int currFrame = 0;
 
-
+    /** Définit les directions X et Y de l'ennemi*/
     private int dirX = 1;
     private int dirY = 0;
+
+    /** Définit de manière non modifiable la vitesse de déplacement du sprite */
     private final float moveSpeed = 0.025f;
 
     private long lastFrameTime;
