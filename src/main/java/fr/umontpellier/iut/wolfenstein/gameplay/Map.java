@@ -8,6 +8,10 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 
+/**
+ * La classe Map permet de générer la matrice des murs utilisée par la logique du jeu ainsi que par les méthodes d'affichage de GameRenderer.
+ * Elle permet aussi d'ajouter de charger les différents sprites, qui ne sont pas représentés dans la matrice worldMap (qui ne représente donc que les murs)
+ */
 public class Map {
 
     private final int[][] worldMap;
@@ -17,12 +21,13 @@ public class Map {
 
     public Map(String url){
         sprites = new ArrayList<>();
-        Image maMap = new Image(url);
-        PixelReader reader = maMap.getPixelReader();
+        Image maMap = new Image(url);                // L'image utilisée pour générer la map est également utilisée pour l'affichage de la minimap
+        PixelReader reader = maMap.getPixelReader(); // Le pixelReader permet de lire la valeur RGB d'un pixel.
         width = (int) maMap.getWidth();
         height = (int) maMap.getHeight();
         worldMap = new int[width][height];
 
+        // Cette boucle parcourt chaque pixel du dessin et lit sa valeur RGB. Si la couleur est comprise, on fait ce qu'il faut.
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 Color maCoul = reader.getColor(i, j);

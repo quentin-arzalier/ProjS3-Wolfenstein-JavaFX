@@ -10,8 +10,12 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * La classe MainMenu est une classe purement JavaFX et permet d'afficher le Menu principal.
+ */
 public class MainMenu extends Stage implements Initializable {
 
+    // On utilise des integerProperty de JavaFX afin de pouvoir leur coller des listeners (dans la classe MainApp) pour sortir du menu
     private IntegerProperty nbPlayers;
     private IntegerProperty currPlayerID;
 
@@ -21,6 +25,11 @@ public class MainMenu extends Stage implements Initializable {
         this.currPlayerID = currPlayerID;
     }
 
+    /**
+     * On initialise la fenêtre (stage) afin de l'afficher. On appelle la classe MainMenuController qui va s'occuper des boutons et du layout
+     * @param url On n'utilise pas ce paramètre dans notre application
+     * @param resourceBundle Celui là non plus
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         GridPane root = new MainMenuController(nbPlayers, currPlayerID);

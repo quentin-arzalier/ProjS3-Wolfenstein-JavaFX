@@ -139,12 +139,13 @@ public class GameRenderer extends Pane {
         float camVectXD = vx + latX;
         float camVectYD = vy + latY;
 
+        // On dessine ligne par ligne donc on itère sur l'axe Y
         for (int y = 0; y < realHeight; y++) {
             boolean isFloor = y > horizon + camPitch;
 
             // La position de la ligne que l'on dessine en fonction de la ligne d'horizon
             int scanLineY = y - (int)horizon - (int)camPitch;
-            if (!   isFloor) scanLineY *= -1;
+            if (!isFloor) scanLineY *= -1; // Nécessaire pour que le plafond soit dessiné correctement lorsque le joueur bouge
 
             float rowDist = horizon / scanLineY;
 
@@ -163,6 +164,8 @@ public class GameRenderer extends Pane {
 
                 solX += pasX;
                 solY += pasY;
+
+                // Les textures des murs ayant pour id 2 et 4 on été utilisées pour le sol et le plafond.
                 int text = 4;
                 if (isFloor) text = 2;
 
@@ -190,6 +193,7 @@ public class GameRenderer extends Pane {
             float rayDirX = vx + latX * camX;
             float rayDirY = vy + latY * camX;
 
+
             HashMap<String, Number> ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
 
 
@@ -197,48 +201,60 @@ public class GameRenderer extends Pane {
             int nbHits = ddaInfo.get("nbHits").intValue();
             float t = ddaInfo.get("t").floatValue();
 
+            // Si on passe par des murs transparents, nbHits sera supérieur à 0. On veut parcourir la liste des murs dans le sens inverse
             for (int i = nbHits-1; i >= 0; i--) {
 
 
+                // On récupère toutes les informations importantes sur le mur que l'on veut dessiner
                 float newPosX = ddaInfo.get("newPosX"+i).floatValue();
                 float newPosY = ddaInfo.get("newPosY"+i).floatValue();
                 int wallHeight =  ddaInfo.get("wallHeight"+i).intValue();
                 int hit = ddaInfo.get("hit"+i).intValue();
                 int side = ddaInfo.get("side"+i).intValue();
 
+                // Le mur d'ID 7 n'est dessiné que des côtés nord et sud et le 8 des côtés ouest et est.
+                // C'est une tentative de faire des murs fins et ça rend presque bien!
                 if (hit == 7 && side == 0 || hit == 8 && side == 1){
                     continue;
                 }
 
 
-                int wallTextX;
+                // On détermine quel pixel de la texture doit être dessiné en premier (Sur quelle fraction du mur notre rayon a tapé)
                 float wallTextY = 0;
                 float pixelPos = (side == 1) ? newPosX : newPosY;
+                int wallTextX = (int) ((pixelPos%1) * texSize);
 
-                wallTextX = (int) ((pixelPos%1) * texSize);
+
                 //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
                 //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
 
-                int finToit = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
+                // On calcule le pixel de hauteur ou commencer à dessiner le mur.
+                int debutDessin = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
 
-                if (finToit < 0){
-                    wallTextY = -finToit/(float)wallHeight*texSize;
-                    finToit = 0;
+                // S'il est inférieur à 0, on ne commence pas la lecture du fichier texture tout en haut
+                if (debutDessin < 0){
+                    wallTextY = -debutDessin/(float)wallHeight*texSize;
+                    debutDessin = 0;
                 }
 
-                int debutSol = wallHeight / 2 + realHeight / 2 + (int)(camPitch);
-                if (debutSol >= realHeight) debutSol = realHeight - 1;
+                // On calcule aussi la fin du dessin et on vérifie les mêmes choses.
+                int finDessin = wallHeight / 2 + realHeight / 2 + (int)(camPitch);
+                if (finDessin >= realHeight) finDessin = realHeight - 1;
 
-                for (int y = finToit; y < debutSol; y++) {
+                for (int y = debutDessin; y < finDessin; y++) {
                     Color color = chooseColor(hit, side, wallTextX, (int)wallTextY);
+
+                    // Si on a traversé plusieurs murs et que le mur que l'on dessine n'est pas le dernier, on doit calculer la moyenne des couleurs RGB.
                     if (nbHits > 1 && i < nbHits-1){
                         Color oldColor = monImage.getPixelReader().getColor(x, y);
                         color = new Color((color.getRed()+oldColor.getRed())/2, (color.getGreen()+oldColor.getGreen())/2, (color.getBlue()+oldColor.getBlue())/2, 1);
                     }
+
                     changePixel(x, y, color);
                     wallTextY += texSize /(double) wallHeight;
                 }
             }
+            // On enregistre la position du mur solide touché pour savoir si on dessine ou non les différents sprites.
             zBuffer[x] = t;
         }
     }
@@ -346,16 +362,21 @@ public class GameRenderer extends Pane {
     }
 
     /**
-     * Cette méthode permet de savoir de quel couleur est le mur à dessiner
+     * Cette méthode permet de savoir de quel couleur est le pixel à dessiner du mur en question
      * @param hit L'identifiant du mur dans la matrice worldMap
-     * @return La couleur du mur
+     * @param side Le côté touché permet de déterminer si l'on doit prendre la texture plus foncée ou non.
+     * @param texX La position X du pixel à lire sur le fichier texture
+     * @param texY La position Y du pixel à lire sur le fichier texture
+     * @return La couleur du pixel à dessiner
      */
-    private Color chooseColor(int hit,int side,int X,int Y){
-        return MurType.getById(hit).getText(side).getPixelReader().getColor(X,Y);
+
+    private Color chooseColor(int hit,int side,int texX,int texY){
+        return MurType.getById(hit).getText(side).getPixelReader().getColor(texX,texY);
     }
 
     /**
      * L'algorithme permettant de calculer la distance d'un mur par rapport au joueur
+     * (DDA signifie Digital Differential Analyzer, ADN ou analyseur différentiel numérique en français)
      * @param rayDirX Les coordonnées X du vecteur vision actuel
      * @param rayDirY Les coordonnées Y du vecteur vision actuel
      * @param posX Les coordonnées X du joueur
