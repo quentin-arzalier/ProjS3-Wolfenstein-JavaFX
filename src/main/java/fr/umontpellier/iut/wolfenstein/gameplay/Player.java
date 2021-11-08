@@ -38,6 +38,9 @@ public class Player {
     // Rayon du joueur, pour les collisions avec les murs
     private static final float radius = .1f;
 
+    // Carte sur laquelle le joueur se déplace
+    private Map map;
+
     private final int playerID;
 
     private boolean isMultiplayer = false;
@@ -73,12 +76,13 @@ public class Player {
 
     /**
      * Teste si une position donnée peut être occupée par le joueur
-     * @param worldMap carte du jeu
+     *
      * @param x abscique de la position
      * @param y ordonnée de la position
      * @return true si le joueur peut aller à cette position, false sinon
      */
-    private boolean isValidPosition(int[][] worldMap, float x, float y) {
+    private boolean isValidPosition(float x, float y) {
+        int[][] worldMap = map.getWorldMap();
         int ix = (int) x;
         int iy = (int) y;
         float fx = x % 1;
@@ -93,15 +97,15 @@ public class Player {
 
     /**
      * Déplace le joueur de la quantité indiquée en x et en y
-     * @param worldMap carte du jeu
+     *
      * @param dx déplacement en x
      * @param dy déplacement en y
      */
-    public void move(int[][] worldMap, float dx, float dy) {
-        if (isValidPosition(worldMap, posX + dx, posY)) {
+    public void move(float dx, float dy) {
+        if (isValidPosition(posX + dx, posY)) {
             posX += dx;
         }
-        if (isValidPosition(worldMap, posX, posY + dy)) {
+        if (isValidPosition(posX, posY + dy)) {
             posY += dy;
         }
         sprite.updatePos(posX, posY);
@@ -109,22 +113,26 @@ public class Player {
 
     /**
      * Déplace le joueur en fonction des touches appuyées
-     * @param worldMap carte du jeu
      */
-    public void moveCharacter(int[][] worldMap) {
+    public void moveCharacter() {
         if (isUp) {
-            move(worldMap, vx * moveSpeed, vy * moveSpeed);
+            move(vx * moveSpeed, vy * moveSpeed);
         }
         if (isDown) {
-            move(worldMap, -vx * moveSpeed, -vy * moveSpeed);
+            move(-vx * moveSpeed, -vy * moveSpeed);
         }
         if (isRight) {
-            move(worldMap, latX * moveSpeed, latY * moveSpeed);
+            move(latX * moveSpeed, latY * moveSpeed);
         }
         if (isLeft) {
-            move(worldMap, -latX * moveSpeed, -latY * moveSpeed);
+            move(-latX * moveSpeed, -latY * moveSpeed);
         }
-        if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString()); // Utilisée uniquement en cas de multijoueur pour partager sa position aux autres
+        if (isMultiplayer)
+            WolfClient.getInstance().sendCommand(getPosAsString()); // Utilisée uniquement en cas de multijoueur pour partager sa position aux autres
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
     }
 
     public void setUp(boolean up) {

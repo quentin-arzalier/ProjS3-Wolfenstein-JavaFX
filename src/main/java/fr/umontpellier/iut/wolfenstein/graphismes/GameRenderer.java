@@ -100,7 +100,7 @@ public class GameRenderer extends Pane {
                 float frameTime = (now - lastUpdate) / 1_000_000_000f;
                 currPlayer.setMoveSpeed(frameTime * 5);
                 currPlayer.setRotSpeed(frameTime * 3);
-                currPlayer.moveCharacter(worldMap);
+                currPlayer.moveCharacter();
 
                 // On calcule les images par seconde une fois par seconde
                 if (now - lastCheck >= 1_000_000_000) {

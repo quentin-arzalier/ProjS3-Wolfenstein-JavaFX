@@ -89,8 +89,11 @@ public class MainApp extends Application {
 
         // on instancie le moteur de jeu
         game = new GameRenderer(currPlayer, minimap);
-        game.setMap(createMap(0));
-
+        Map map = createMap(0);
+        game.setMap(map);
+        for (Player p : players){
+            p.setMap(map);
+        }
 
         setupWindow();
 
