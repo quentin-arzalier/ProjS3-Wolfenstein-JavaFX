@@ -35,19 +35,21 @@ public class Player {
     private boolean isLeft = false;
     private boolean isRight = false;
 
+    // Rayon du joueur, pour les collisions avec les murs
+    private static final float radius = .1f;
 
     private final int playerID;
 
     private boolean isMultiplayer = false;
 
 
-    public Player(Color c, int nb){
+    public Player(Color c, int nb) {
         color = c;
         sprite = new Sprite(posX, posY, "player" + nb);
         playerID = nb;
     }
 
-    public void setMultiplayer(){
+    public void setMultiplayer() {
         isMultiplayer = true;
     }
 
@@ -68,30 +70,57 @@ public class Player {
     }
 
     /**
-     * Cette méthode est appelée à chaque frame pour faire bouger le joueur selon les boolean de déplacement activés ou non par les touches du clavier.
-     * On vérifie les états des boolean, et on déplace le joueur en fonction de leur valeurs.
+     * Teste si une position donnée peut être occupée par le joueur
+     * @param worldMap carte du jeu
+     * @param x abscique de la position
+     * @param y ordonnée de la position
+     * @return true si le joueur peut aller à cette position, false sinon
      */
-    public void moveCharacter(int[][] worldMap){
-        float checkMovespeed = moveSpeed * 2;
+    private boolean isValidPosition(int[][] worldMap, float x, float y) {
+        int ix = (int) x;
+        int iy = (int) y;
+        float fx = x % 1;
+        float fy = y % 1;
+        if (worldMap[ix][iy] != 0) return false;
+        if (fx < radius && worldMap[ix - 1][iy] != 0) return false;
+        if (fx > 1 - radius && worldMap[ix + 1][iy] != 0) return false;
+        if (fy < radius && worldMap[ix][iy - 1] != 0) return false;
+        if (fy > 1 - radius && worldMap[ix][iy + 1] != 0) return false;
+        return true;
+    }
+
+    /**
+     * Déplace le joueur de la quantité indiquée en x et en y
+     * @param worldMap carte du jeu
+     * @param dx déplacement en x
+     * @param dy déplacement en y
+     */
+    public void move(int[][] worldMap, float dx, float dy) {
+        if (isValidPosition(worldMap, posX + dx, posY)) {
+            posX += dx;
+        }
+        if (isValidPosition(worldMap, posX, posY + dy)) {
+            posY += dy;
+        }
+        sprite.updatePos(posX, posY);
+    }
+
+    /**
+     * Déplace le joueur en fonction des touches appuyées
+     * @param worldMap carte du jeu
+     */
+    public void moveCharacter(int[][] worldMap) {
         if (isUp) {
-            if (worldMap[(int)(posX + vx * checkMovespeed)][(int)posY] == 0) posX += vx * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY + vy * checkMovespeed)] == 0) posY += vy * moveSpeed;
-            sprite.updatePos(posX, posY);
+            move(worldMap, vx * moveSpeed, vy * moveSpeed);
         }
         if (isDown) {
-            if (worldMap[(int)(posX - vx * checkMovespeed)][(int)posY] == 0) posX -= vx * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY - vy * checkMovespeed)] == 0) posY -= vy * moveSpeed;
-            sprite.updatePos(posX, posY);
+            move(worldMap, -vx * moveSpeed, -vy * moveSpeed);
         }
-        if (isRight){
-            if (worldMap[(int)(posX + latX * checkMovespeed)][(int)posY] == 0) posX += latX * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY + latY * checkMovespeed)] == 0) posY += latY * moveSpeed;
-            sprite.updatePos(posX, posY);
+        if (isRight) {
+            move(worldMap, latX * moveSpeed, latY * moveSpeed);
         }
         if (isLeft) {
-            if (worldMap[(int)(posX - latX * checkMovespeed)][(int)posY] == 0) posX -= latX * moveSpeed;
-            if (worldMap[(int)posX][(int)(posY - latY * checkMovespeed)] == 0) posY -= latY * moveSpeed;
-            sprite.updatePos(posX, posY);
+            move(worldMap, -latX * moveSpeed, -latY * moveSpeed);
         }
         if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString()); // Utilisée uniquement en cas de multijoueur pour partager sa position aux autres
     }
@@ -114,6 +143,7 @@ public class Player {
 
     /**
      * Cette méthode est utilisée pour changer l'angle de la caméra verticalement (si le joueur regarde vers le haut ou vers le bas)
+     *
      * @param offset La différence à ajouter à la variable (dépend du mouvement de la souris du joueur lors de l'appel)
      */
     public void moveCameraPitch(float offset) {
@@ -124,9 +154,10 @@ public class Player {
 
     /**
      * Manipulation de l'angle de la caméra horizontalement.
+     *
      * @param input On utilise un input pour déterminer si l'utilisateur a beaucoup déplacé la souris ou très peu.
      */
-    public void lookLeft(float input){
+    public void lookLeft(float input) {
         float oldRotSpeed = rotSpeed;          // rotSpeed est une valeur qui dépend de la fréquence d'images du jeu afin d'éviter des problèmes liés au ralentissements
         rotSpeed = rotSpeed * Math.abs(input); // On multiplie cette vitesse par la quantité de pixels déplacées par la souris
 
@@ -144,10 +175,11 @@ public class Player {
 
     /**
      * Manipulation de l'angle de la caméra horizontalement.
+     *
      * @param input On utilise un input pour déterminer si l'utilisateur a beaucoup déplacé la souris ou très peu.
      */
-    public void lookRight(float input){
-        float oldRotSpeed =  rotSpeed;
+    public void lookRight(float input) {
+        float oldRotSpeed = rotSpeed;
         rotSpeed = rotSpeed * Math.abs(input);
         float oldVx = vx;
         vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
@@ -184,7 +216,7 @@ public class Player {
         return latY;
     }
 
-    public float getCamPitch(){
+    public float getCamPitch() {
         return camPitch;
     }
 
@@ -210,11 +242,11 @@ public class Player {
      */
 
 
-    public String getPosAsString(){
+    public String getPosAsString() {
         return "PLAYERPOS" + playerID + ":" + posX + ", " + posY + ", " + vx + ", " + vy + ", " + latX + ", " + latY;
     }
 
-    public void setPosWithString(String posString){
+    public void setPosWithString(String posString) {
         String list = posString.split(":")[1];
         String[] info = list.split(", ");
         this.posX = Float.parseFloat(info[0]);
