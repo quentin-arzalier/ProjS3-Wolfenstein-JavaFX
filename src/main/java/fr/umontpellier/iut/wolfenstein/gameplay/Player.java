@@ -42,9 +42,11 @@ public class Player {
 
     private boolean isMultiplayer = false;
 
+    // Couleurs des joueurs en fonction de leur numéro
+    private static final Color[] playerColors = {Color.CYAN, Color.RED, Color.YELLOW, Color.GREEN};
 
-    public Player(Color c, int nb) {
-        color = c;
+    public Player(int nb) {
+        color = playerColors[nb - 1];
         sprite = new Sprite(posX, posY, "player" + nb);
         playerID = nb;
     }

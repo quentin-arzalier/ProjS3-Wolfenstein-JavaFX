@@ -150,36 +150,10 @@ public class MainApp extends Application {
      */
     private void createPlayers(){
         players = new Player[nbPlayers.get()];
-
-        Player player1 = new Player(Color.CYAN,1);
-        players[0] = player1;
-        if (currPlayerID.get() == 1){
-            currPlayer = player1;
+        for (int i = 0; i < players.length; i++) {
+            players[i] = new Player(i + 1);
         }
-
-        if (nbPlayers.get() >= 2){
-            Player player2 = new Player(Color.RED, 2);
-            players[1] = player2;
-            if (currPlayerID.get() == 2){
-                currPlayer = player2;
-            }
-        }
-
-        if (nbPlayers.get() >= 3){
-            Player player3 = new Player(Color.YELLOW, 3);
-            players[2] = player3;
-            if (currPlayerID.get() == 3){
-                currPlayer = player3;
-            }
-        }
-
-        if (nbPlayers.get() == 4){
-            Player player4 = new Player(Color.GREEN, 4);
-            players[3] = player4;
-            if (currPlayerID.get() == 4){
-                currPlayer = player4;
-            }
-        }
+        currPlayer = players[currPlayerID.get() - 1];
 
         if (nbPlayers.get() >= 2){
             for (Player player : players){
