@@ -33,6 +33,10 @@ public class Player {
 
     // Rayon du joueur, pour les collisions avec les murs
     private static final float radius = .1f;
+    // Vitesse angulaire du joueur lors du déplacement au clavier
+    // Rmq: les valeurs du sin et cos de l'angle pourraient être codées en dur
+    private static final float cosAngle = (float) Math.cos(.05);
+    private static final float sinAngle = (float) Math.sin(.05);
 
     // Carte sur laquelle le joueur se déplace
     private Map map;
@@ -116,10 +120,18 @@ public class Player {
             move(-vx * moveSpeed, -vy * moveSpeed);
         }
         if (isRight) {
-            move(-vy * moveSpeed, vx * moveSpeed);
+//            move(-vy * moveSpeed, vx * moveSpeed);
+            float x = vx;
+            float y = vy;
+            vx = cosAngle * x - sinAngle * y;
+            vy = sinAngle * x + cosAngle * y;
         }
         if (isLeft) {
-            move(vy * moveSpeed, -vx * moveSpeed);
+//            move(vy * moveSpeed, -vx * moveSpeed);
+            float x = vx;
+            float y = vy;
+            vx = cosAngle * x + sinAngle * y;
+            vy = -sinAngle * x + cosAngle * y;
         }
         if (isMultiplayer)
             WolfClient.getInstance().sendCommand(getPosAsString()); // Utilisée uniquement en cas de multijoueur pour partager sa position aux autres
