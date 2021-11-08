@@ -27,7 +27,7 @@ public class Minimap extends StackPane {
     private float currScaleY;
     private ArrayList<Player> joueurs;
 
-    public Minimap(){
+    public Minimap() {
         joueurs = new ArrayList<>();
         this.setMaxWidth(600);
         this.setMaxHeight(600);
@@ -59,24 +59,26 @@ public class Minimap extends StackPane {
 
     /**
      * Permet de changer l'image de fond de la carte
+     *
      * @param s L'adresse à laquelle se trouve la nouvelle image à dessiner
      */
-    public void setMap(String s){
-        contextBG.scale(1/currScaleX, 1/currScaleY); // Puisque tous les niveaux ne sont pas de la même taille, on doit mettre à l'échelle le canevas (context)
+    public void setMap(String s) {
+        contextBG.scale(1 / currScaleX, 1 / currScaleY); // Puisque tous les niveaux ne sont pas de la même taille, on doit mettre à l'échelle le canevas (context)
         contextBG.clearRect(0, 0, 600, 600);
         currImage = new Image(s);
-        currScaleX = (float) (600f/currImage.getWidth());
-        currScaleY = (float) (600f/currImage.getHeight());
+        currScaleX = (float) (600f / currImage.getWidth());
+        currScaleY = (float) (600f / currImage.getHeight());
         contextBG.scale(currScaleX, currScaleY);
         contextBG.drawImage(currImage, 0, 0);
     }
 
-    public void addJoueur(Player p){
+    public void addJoueur(Player p) {
         joueurs.add(p);
     }
 
     /**
      * Cette méthode est appelée par le GameRenderer et permet de mettre à jour l'affichage de la carte.
+     *
      * @param fps Le nombre actuel d'images par secondes de l'application
      */
     public void update(long fps) {
@@ -85,23 +87,21 @@ public class Minimap extends StackPane {
         contextBG.drawImage(currImage, 0, 0);    // On dessine le niveau actuel en fond de carte
 
         // On itère sur chaque joueur présent dans la partie de jeu
-        for (Player p : joueurs){
+        for (Player p : joueurs) {
             float posX = p.getPosX();
             float posY = p.getPosY();
             float vx = p.getVx();
             float vy = p.getVy();
-            float latX = p.getLatX();
-            float latY = p.getLatY();
 
             // On calcule la position du joueur à l'échelle du canevas
             int pixelPosX = (int) (posX * 600 / currImage.getWidth());
             int pixelPosY = (int) (posY * 600 / currImage.getHeight());
 
             // Ces angles sont utilisés pour représenter le champ de vision des joueurs sur la carte
-            double angle1X = (posX + vx*3 - latX*1.5) * 600 / currImage.getWidth();
-            double angle1Y = (posY + vy*3 - latY*1.5) * 600 / currImage.getHeight();
-            double angle2X = (posX + vx*3 + latX*1.5) * 600 / currImage.getWidth();
-            double angle2Y = (posY + vy*3 + latY*1.5) * 600 / currImage.getHeight();
+            double angle1X = (posX + vx * 3 + vy * 1.5) * 600 / currImage.getWidth();
+            double angle1Y = (posY + vy * 3 - vx * 1.5) * 600 / currImage.getHeight();
+            double angle2X = (posX + vx * 3 - vy * 1.5) * 600 / currImage.getWidth();
+            double angle2Y = (posY + vy * 3 + vx * 1.5) * 600 / currImage.getHeight();
 
             // On dessine le champ de vision du joueur en jaune transparent sur la carte
             contextPlayer.setFill(new Color(0.8, 0.8, 0.0, 0.6));
@@ -110,8 +110,8 @@ public class Minimap extends StackPane {
 
             // On dessine un cercle centré sur la position x y du joueur
             contextPlayer.setFill(p.getColor());
-            contextPlayer.strokeOval(pixelPosX-3, pixelPosY-3, 6, 6);
-            contextPlayer.fillOval(pixelPosX-3, pixelPosY-3, 6, 6);
+            contextPlayer.strokeOval(pixelPosX - 3, pixelPosY - 3, 6, 6);
+            contextPlayer.fillOval(pixelPosX - 3, pixelPosY - 3, 6, 6);
         }
     }
 }

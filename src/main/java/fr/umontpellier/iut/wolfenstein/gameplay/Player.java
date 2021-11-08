@@ -18,10 +18,6 @@ public class Player {
     private float vx = 0;
     private float vy = 1;
 
-    // Le vecteur direction de la caméra (perpendiculaire au joueur)
-    private float latX = -1;
-    private float latY = 0;
-
     // La rotation de la caméra vers le haut/le bas
     private float camPitch = 0;
 
@@ -66,8 +62,6 @@ public class Player {
         posY = 16.5f;
         vx = 0;
         vy = 1;
-        latX = -1;
-        latY = 0;
         isUp = false;
         isDown = false;
         isLeft = false;
@@ -122,10 +116,10 @@ public class Player {
             move(-vx * moveSpeed, -vy * moveSpeed);
         }
         if (isRight) {
-            move(latX * moveSpeed, latY * moveSpeed);
+            move(-vy * moveSpeed, vx * moveSpeed);
         }
         if (isLeft) {
-            move(-latX * moveSpeed, -latY * moveSpeed);
+            move(vy * moveSpeed, -vx * moveSpeed);
         }
         if (isMultiplayer)
             WolfClient.getInstance().sendCommand(getPosAsString()); // Utilisée uniquement en cas de multijoueur pour partager sa position aux autres
@@ -175,9 +169,6 @@ public class Player {
         float oldVx = vx;
         vx = (float) (vx * Math.cos(-rotSpeed) - vy * Math.sin(-rotSpeed));
         vy = (float) (oldVx * Math.sin(-rotSpeed) + vy * Math.cos(-rotSpeed));
-        float oldLatx = latX;
-        latX = (float) (latX * Math.cos(-rotSpeed) - latY * Math.sin(-rotSpeed));
-        latY = (float) (oldLatx * Math.sin(-rotSpeed) + latY * Math.cos(-rotSpeed));
         rotSpeed = oldRotSpeed;
 
         if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString());
@@ -194,9 +185,6 @@ public class Player {
         float oldVx = vx;
         vx = (float) (vx * Math.cos(rotSpeed) - vy * Math.sin(rotSpeed));
         vy = (float) (oldVx * Math.sin(rotSpeed) + vy * Math.cos(rotSpeed));
-        float oldLatx = latX;
-        latX = (float) (latX * Math.cos(rotSpeed) - latY * Math.sin(rotSpeed));
-        latY = (float) (oldLatx * Math.sin(rotSpeed) + latY * Math.cos(rotSpeed));
         rotSpeed = oldRotSpeed;
 
         if (isMultiplayer) WolfClient.getInstance().sendCommand(getPosAsString());
@@ -216,14 +204,6 @@ public class Player {
 
     public float getVy() {
         return vy;
-    }
-
-    public float getLatX() {
-        return latX;
-    }
-
-    public float getLatY() {
-        return latY;
     }
 
     public float getCamPitch() {
@@ -253,7 +233,7 @@ public class Player {
 
 
     public String getPosAsString() {
-        return "PLAYERPOS" + playerID + ":" + posX + ", " + posY + ", " + vx + ", " + vy + ", " + latX + ", " + latY;
+        return "PLAYERPOS" + playerID + ":" + posX + ", " + posY + ", " + vx + ", " + vy;
     }
 
     public void setPosWithString(String posString) {
@@ -263,8 +243,6 @@ public class Player {
         this.posY = Float.parseFloat(info[1]);
         this.vx = Float.parseFloat(info[2]);
         this.vy = Float.parseFloat(info[3]);
-        this.latX = Float.parseFloat(info[4]);
-        this.latY = Float.parseFloat(info[5]);
         sprite.updatePos(posX, posY);
     }
 }
