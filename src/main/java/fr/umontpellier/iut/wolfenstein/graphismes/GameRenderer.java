@@ -268,49 +268,13 @@ public class GameRenderer extends Pane {
 
         // On trie les sprites dans l'ordre décroissant des distances au joueur pour afficher les plus proches en dernier (au premier plan)
         for (Sprite s : sprites) {
-            s.setDist(posX, posY);
+            s.updateLocalCoordinates(currPlayer);
         }
         Collections.sort(sprites);
 
         for (Sprite currSprite : sprites) {
-            // Coordonnées du point S associées à la position du sprite
-            float spritePosX = currSprite.getPosX();
-            float spritePosY = currSprite.getPosY();
-
-            // Coordonnées du vecteur entre les points P et S (PS)
-            // Il s'agit également des coordonnées du sprite dans le plan centré en (posX, posY)
-            float vectorX = spritePosX - posX;
-            float vectorY = spritePosY - posY;
-
-            /* ON VA SE SERVIR DU SPRINT 2 DE MOD MATHS WOOOOOOOOOOO
-             *
-             *                                                          ( latX vx )
-             * Matrice M du plan d'axes vecteur vision/vecteur caméra : ( latY vy )
-             *
-             * On a donc le système suivant :
-             * { a*latX + b*vx = vectorX
-             * { a*latY + b*vy = vectorY
-             * Que l'on transforme en ce calcul matriciel :
-             * (latX vx)(a) = (vectorX)
-             * (latY vy)(b) = (vectorY)
-             * avec a => la position du sprite latéralement sur l'écran (sur l'axe X, celui du vecteur caméra)
-             * et   b => la profondeur du sprite dans l'écran           (sur l'axe Y, celui du vecteur vision)
-             *
-             * Donnons d le déterminant de la matrice M = latX * vy - vx * latY
-             * Inversons M pour obtenir facilement les valeurs de a et de b :
-             * (vy/d    -vx/d ) (vectorX) = (a)
-             * (-latY/d latX/d) (vectorY) = (b)
-             * On obtient donc le système que l'on peut résoudre tel que voilà :
-             * { (vy*vectorX - vx*vectorY)/d = a
-             * { (latX*vectorY - latY*vectorX)/d = b
-             * Calculons le déterminant de la matrice M du plan pour trouver les coordonnées du sprite dans ce dernier.
-             */
-
-            float d = (-vy * vy - vx * vx);
-
-            // On utilise le déterminant pour inverser correctement la matrice et replacer le sprite dans le nouveau plan
-            float spriteScreenPosX = (-vy * vectorY - vx * vectorX) / d; // valeur forcément positive
-            float spriteScreenPosY = (vy * vectorX - vx * vectorY) / d;
+            float spriteScreenPosX = currSprite.getLocalX();
+            float spriteScreenPosY = currSprite.getLocalY();
 
             // Il faut désormais replacer ces valeurs sur un X de coordonnées realWidth et non mapSize
             int screenPosX = (int) ((realWidth / 2) * (1 + spriteScreenPosY / spriteScreenPosX));
