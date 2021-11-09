@@ -116,18 +116,28 @@ public class Player {
             move(-vx * moveSpeed, -vy * moveSpeed);
         }
         if (pressedKeys.contains(KeyCode.LEFT) || pressedKeys.contains(KeyCode.A)) {
-//            move(-vy * moveSpeed, vx * moveSpeed);
-            float x = vx;
-            float y = vy;
-            vx = cosAngle * x + sinAngle * y;
-            vy = -sinAngle * x + cosAngle * y;
+            if (pressedKeys.contains(KeyCode.ALT)) {
+                // déplacement latéral
+                move(vy * moveSpeed, -vx * moveSpeed);
+            } else {
+                // pivotement
+                float x = vx;
+                float y = vy;
+                vx = cosAngle * x + sinAngle * y;
+                vy = -sinAngle * x + cosAngle * y;
+            }
         }
         if (pressedKeys.contains(KeyCode.RIGHT) || pressedKeys.contains(KeyCode.D)) {
-//            move(vy * moveSpeed, -vx * moveSpeed);
-            float x = vx;
-            float y = vy;
-            vx = cosAngle * x - sinAngle * y;
-            vy = sinAngle * x + cosAngle * y;
+            if (pressedKeys.contains(KeyCode.ALT)) {
+                // déplacement latéral
+                move(-vy * moveSpeed, vx * moveSpeed);
+            } else {
+                // pivotement
+                float x = vx;
+                float y = vy;
+                vx = cosAngle * x - sinAngle * y;
+                vy = sinAngle * x + cosAngle * y;
+            }
         }
         if (isMultiplayer)
             WolfClient.getInstance().sendCommand(getPosAsString()); // Utilisée uniquement en cas de multijoueur pour partager sa position aux autres
