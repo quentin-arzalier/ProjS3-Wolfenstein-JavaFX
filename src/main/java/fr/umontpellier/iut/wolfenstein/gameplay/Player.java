@@ -2,7 +2,10 @@ package fr.umontpellier.iut.wolfenstein.gameplay;
 
 import fr.umontpellier.iut.wolfenstein.graphismes.Sprite;
 import fr.umontpellier.iut.wolfenstein.reseau.WolfClient;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
+
+import java.util.Set;
 
 public class Player {
 
@@ -25,18 +28,15 @@ public class Player {
     private float moveSpeed = 0;
     private float rotSpeed = 0;
 
-    // Les valeurs booléennes qui servent pour déplacer le joueur
-    private boolean isUp = false;
-    private boolean isDown = false;
-    private boolean isLeft = false;
-    private boolean isRight = false;
-
     // Rayon du joueur, pour les collisions avec les murs
     private static final float radius = .1f;
     // Vitesse angulaire du joueur lors du déplacement au clavier
     // Rmq: les valeurs du sin et cos de l'angle pourraient être codées en dur
     private static final float cosAngle = (float) Math.cos(.05);
     private static final float sinAngle = (float) Math.sin(.05);
+
+    // Ensemble des touches enfoncées (maintenu à jour par MainApp)
+    private Set<KeyCode> pressedKeys;
 
     // Carte sur laquelle le joueur se déplace
     private Map map;
@@ -66,10 +66,6 @@ public class Player {
         posY = 16.5f;
         vx = 0;
         vy = 1;
-        isUp = false;
-        isDown = false;
-        isLeft = false;
-        isRight = false;
     }
 
     /**
@@ -113,25 +109,25 @@ public class Player {
      * Déplace le joueur en fonction des touches appuyées
      */
     public void moveCharacter() {
-        if (isUp) {
+        if (pressedKeys.contains(KeyCode.UP) || pressedKeys.contains(KeyCode.W)) {
             move(vx * moveSpeed, vy * moveSpeed);
         }
-        if (isDown) {
+        if (pressedKeys.contains(KeyCode.DOWN) || pressedKeys.contains(KeyCode.S)) {
             move(-vx * moveSpeed, -vy * moveSpeed);
         }
-        if (isRight) {
+        if (pressedKeys.contains(KeyCode.LEFT) || pressedKeys.contains(KeyCode.A)) {
 //            move(-vy * moveSpeed, vx * moveSpeed);
-            float x = vx;
-            float y = vy;
-            vx = cosAngle * x - sinAngle * y;
-            vy = sinAngle * x + cosAngle * y;
-        }
-        if (isLeft) {
-//            move(vy * moveSpeed, -vx * moveSpeed);
             float x = vx;
             float y = vy;
             vx = cosAngle * x + sinAngle * y;
             vy = -sinAngle * x + cosAngle * y;
+        }
+        if (pressedKeys.contains(KeyCode.RIGHT) || pressedKeys.contains(KeyCode.D)) {
+//            move(vy * moveSpeed, -vx * moveSpeed);
+            float x = vx;
+            float y = vy;
+            vx = cosAngle * x - sinAngle * y;
+            vy = sinAngle * x + cosAngle * y;
         }
         if (isMultiplayer)
             WolfClient.getInstance().sendCommand(getPosAsString()); // Utilisée uniquement en cas de multijoueur pour partager sa position aux autres
@@ -141,20 +137,8 @@ public class Player {
         this.map = map;
     }
 
-    public void setUp(boolean up) {
-        isUp = up;
-    }
-
-    public void setDown(boolean down) {
-        isDown = down;
-    }
-
-    public void setLeft(boolean left) {
-        isLeft = left;
-    }
-
-    public void setRight(boolean right) {
-        isRight = right;
+    public void setPressedKeys(Set<KeyCode> pressedKeys) {
+        this.pressedKeys = pressedKeys;
     }
 
     /**
