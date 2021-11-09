@@ -172,10 +172,14 @@ public class MainApp extends Application {
      * Cette méthode permet de naviguer entre les différents niveaux que nous avons dessinés jusqu'à présent.
      * @param i L'indice de sélection du niveau.
      */
-    private void changeLevel(int i){
-        game.setMap(createMap(i));
+    private void changeLevel(int i) {
+        Map map = createMap(i);
+        game.setMap(map);
         minimap.setMap("levels/level" + i + ".png");
-        currPlayer.resetPos(); // On replace le joueur de l'application (Le multijoueur ne fonctionne pas encore pour le
+        for (Player player : players) {
+            player.setMap(map);
+            player.resetPos();
+        }
     }
 
     /**
