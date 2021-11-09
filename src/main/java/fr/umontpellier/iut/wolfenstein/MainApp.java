@@ -25,11 +25,10 @@ import javafx.stage.Stage;
 import java.util.*;
 
 /**
- * Cette classe est le composant princpal du programme JavaFX, et sera composée des différentes parties graphiques du jeu.
+ * Cette classe est le composant principal du programme JavaFX, et sera composée des différentes parties graphiques du jeu.
  * Elle définit les éléments principaux de gameplay et instancie les éléments de graphismes.
  */
 public class MainApp extends Application {
-
 
     private MainMenu mainMenu;
     private Stage primaryStage;

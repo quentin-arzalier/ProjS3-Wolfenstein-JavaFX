@@ -35,6 +35,7 @@ public class MainMenu extends Stage implements Initializable {
         GridPane root = new MainMenuController(nbPlayers, currPlayerID);
         this.setTitle("Menu Principal");
         this.setScene(new Scene(root, 1050, 720));
+        this.getScene().getStylesheets().add("css/style.css");
         this.show();
     }
 }
