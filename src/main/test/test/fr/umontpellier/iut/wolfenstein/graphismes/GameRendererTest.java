@@ -77,13 +77,29 @@ class GameRendererTest {
     /////////////////////////////////////////////////////////////////////////////////////
 
     @Test
-    void infosDDACorrectesJoueurMilieuSalle(){
+    void infosDDACorrectesJoueurMilieuSalleRegardeX(){
         HashMap<String, Number> ddaInfo = moteur.startDDA(1, 0, 2.5f, 2.5f);
         assertEquals(1.5, ddaInfo.get("t"));
         assertEquals(1, ddaInfo.get("hit0"));
         assertEquals(4.0, ddaInfo.get("newPosX0"));
         assertEquals(2.5, ddaInfo.get("newPosY0"));
         assertEquals(0, ddaInfo.get("side0"));
+    }
+
+    @Test
+    void infosDDACorrectesJoueurMilieuSalleRegardeY(){
+        HashMap<String, Number> ddaInfo = moteur.startDDA(0, 1, 2.5f, 2.5f);
+        assertEquals(1.5, ddaInfo.get("t"));
+        assertEquals(1, ddaInfo.get("hit0"));
+        assertEquals(2.5, ddaInfo.get("newPosX0"));
+        assertEquals(4.0, ddaInfo.get("newPosY0"));
+        assertEquals(1, ddaInfo.get("side0"));
+    }
+
+    @Test
+    void chooseColorRetourneBonneCouleur(){
+        Color test = moteur.chooseColor(5, 0, 0, 0);
+        assertEquals(test, Color.web("282828"));
     }
 
 

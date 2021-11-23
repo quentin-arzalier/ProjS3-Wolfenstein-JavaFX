@@ -40,9 +40,12 @@ class MapTest {
         assertEquals(10,map1.getHeight());
 
         int [][]test = map1.getWorldMap();
-
-
         assertTrue(Arrays.stream(test).flatMapToInt(Arrays::stream).allMatch(p -> p == 2));
+    }
 
+    @Test
+    void nbSpritesCorrectAvecQueEnnemis() {
+        Map map = new Map("test/enemies.png");
+        assertEquals(64, map.getSprites().size());
     }
 }
