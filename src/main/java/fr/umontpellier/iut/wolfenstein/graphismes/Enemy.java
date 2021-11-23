@@ -1,5 +1,6 @@
 package fr.umontpellier.iut.wolfenstein.graphismes;
 
+import fr.umontpellier.iut.wolfenstein.gameplay.Player;
 import javafx.scene.image.Image;
 
 /**
@@ -18,35 +19,41 @@ public class Enemy extends Sprite{
     private int dirX = 1;
     private int dirY = 0;
 
+    private float animationTimer = 0;
+    private float moveTimer = 0;
+
     /** Définit de manière non modifiable la vitesse de déplacement du sprite */
     private final float moveSpeed = 0.025f;
-
-    private long lastFrameTime;
-    private long lastMoveTime;
 
     public Enemy(float posX, float posY, String tex) {
         super(posX, posY, tex);
     }
 
     @Override
-    public void setDist(float playerX, float playerY) {
-        super.setDist(playerX, playerY);
+    public void update(float deltaTime, Player player) {
+        super.update(deltaTime, player);
+
+        animationTimer += deltaTime;
+        moveTimer += deltaTime;
+
+        float px = player.getPosX();
+        float py = player.getPosY();
 
         String tex;
         if (currFrame != 0){
-            tex = "sprites/garde/" + direction(playerX, playerY) +"/"+ "garde" + currFrame + ".png";
+            tex = "sprites/garde/" + direction(px, py) +"/"+ "garde" + currFrame + ".png";
         }
         else {
-            tex = "sprites/garde/" + direction(playerX, playerY) +"/garde.png";
+            tex = "sprites/garde/" + direction(px, py) +"/garde.png";
         }
 
 
-        if (getCurrTime() - lastFrameTime >= 200_000_000){
-            lastFrameTime = getCurrTime();
+        if (animationTimer >= .2){
+            animationTimer -= .2;
             nextFrame();
         }
-        if (getCurrTime() - lastMoveTime >= 1_000_000_000){
-            lastMoveTime = getCurrTime();
+        if (moveTimer >= 1){
+            moveTimer -= 1;
             if (currFrame == 0){
                 start();
                 changeDirection();
@@ -146,7 +153,7 @@ public class Enemy extends Sprite{
         float newX = getPosX() + dirX*moveSpeed;
         float newY = getPosY() + dirY*moveSpeed;
         if (getWorldmap()[(int)newX][(int)newY] == 0){
-            updatePos(newX,newY);
+            setPos(newX,newY);
         }
     }
 

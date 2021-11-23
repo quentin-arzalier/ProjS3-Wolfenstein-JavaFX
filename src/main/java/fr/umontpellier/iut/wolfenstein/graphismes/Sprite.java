@@ -8,7 +8,6 @@ public class Sprite implements Comparable<Sprite>{
     private float posX;
     private float posY;
     private float dist;
-    private String texname;
     private Image tex;
     // Position dans le repère local du joueur, selon l'axe de vision du joueur
     private float localX;
@@ -16,12 +15,10 @@ public class Sprite implements Comparable<Sprite>{
     private float localY;
 
     private int[][] worldmap;
-    private long currTime;
 
     public Sprite(float posX, float posY, String tex) {
         this.posX = posX;
         this.posY = posY;
-        this.texname = tex;
         this.tex = new Image("sprites/" + tex + ".png");
     }
 
@@ -35,7 +32,7 @@ public class Sprite implements Comparable<Sprite>{
                 '}';
     }
 
-    public void updateLocalCoordinates(Player p) {
+    public void update(float deltaTime, Player p) {
         float px = p.getPosX();
         float py = p.getPosY();
         float vx = p.getVx();
@@ -43,28 +40,13 @@ public class Sprite implements Comparable<Sprite>{
 
         localX = (posX - px) * vx + (posY - py) * vy;
         localY = -(posX - px) * vy + (posY - py) * vx;
-    }
-
-    public void setDist(float playerX, float playerY){
-        dist = (playerX - posX) * (playerX - posX) + (playerY - posY) * (playerY - posY);
+        dist = (px - posX) * (px - posX) + (py - posY) * (py - posY);
     }
 
     @Override
     public int compareTo(Sprite o) {
         return -Float.compare(localX, o.localX);
     }
-
-    //    @Override
-//    public int compareTo(Sprite o) {
-//        int retour = -1;
-//        if (o.dist > dist){
-//            retour = 1;
-//        }
-//        else if (o.dist == dist){
-//            retour = 0;
-//        }
-//        return retour;
-//    }
 
     public float getPosX() {
         return posX;
@@ -74,7 +56,7 @@ public class Sprite implements Comparable<Sprite>{
         return posY;
     }
 
-    public void updatePos(float posX, float posY){
+    public void setPos(float posX, float posY){
         this.posX = posX;
         this.posY = posY;
     }
@@ -85,14 +67,6 @@ public class Sprite implements Comparable<Sprite>{
 
     public void setTex(Image tex) {
         this.tex = tex;
-    }
-
-    public long getCurrTime() {
-        return currTime;
-    }
-
-    public void setCurrTime(long currTime) {
-        this.currTime = currTime;
     }
 
     public int[][] getWorldmap() {

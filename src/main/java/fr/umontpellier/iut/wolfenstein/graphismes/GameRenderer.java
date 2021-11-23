@@ -77,28 +77,15 @@ public class GameRenderer extends Pane {
          */
         @Override
         public void handle(long now) {
-
-            // On actualise le temps local de chaque sprite pour permettre l'animation de ces derniers
-            for (Sprite sprite : sprites) {
-                sprite.setCurrTime(now);
-            }
-
-            // On démarre l'algorithme de dessin du sol/plafond
-            drawFloor();
-
-            // On démarre l'algorithme de dessin des murs
-            drawWalls();
-
-            // On démarre l'algorithme de dessin des sprites
-            drawSprites();
-
-
-            // On dessine le buffer des pixels à l'écran en une seule fois (réduit le lag)
-            context.drawImage(monImage, 0, 0);
-
-            // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
+            // Temps écoulé depuis la dernière mise à jour (en secondes)
             float deltaTime = (now - lastUpdate) / 1_000_000_000f;
-            currPlayer.moveCharacter(deltaTime);
+            deltaTime = Math.min(deltaTime, 0.1f);  // deltaTime ne peut pas être supérieur à 0.1 secondes
+
+            // mise à jour des différents élements du jeu
+            update(deltaTime);
+
+            // dessine le jeu à l'écran
+            draw();
 
             // On calcule les images par seconde une fois par seconde
             if (now - lastCheck >= 1_000_000_000) {
@@ -111,6 +98,31 @@ public class GameRenderer extends Pane {
         }
     }
 
+    /**
+     * Met à jour les différents éléments du jeu à chaque frame
+     * @param deltaTime temps écoulé depuis la dernière mise à jour
+     */
+    private void update(float deltaTime) {
+        currPlayer.moveCharacter(deltaTime);
+        for (Sprite sprite : sprites) {
+            sprite.update(deltaTime, currPlayer);
+        }
+        Collections.sort(sprites);
+    }
+
+    /**
+     * Méthode chargée de dessiner l'état du jeu à l'écran
+     */
+    private void draw() {
+        // Dessine les différents éléments de l'image dans le buffer
+        drawFloor();
+        drawWalls();
+        drawSprites();
+
+        // On dessine le buffer des pixels à l'écran en une seule fois (réduit le lag)
+        context.drawImage(monImage, 0, 0);
+
+    }
     private void drawFloor() {
 
         // Informations joueur
@@ -167,7 +179,6 @@ public class GameRenderer extends Pane {
                 Color color = chooseColor(text, 1, texX, texY);
 
                 changePixel(x, y, color);
-
             }
         }
 
@@ -253,20 +264,6 @@ public class GameRenderer extends Pane {
 
 
     private void drawSprites() {
-        // Coordonnées du point P associées à la position du joueur (Player)
-        float posX = currPlayer.getPosX();
-        float posY = currPlayer.getPosY();
-
-        // Coordonnées du vecteur vision du joueur
-        float vx = currPlayer.getVx();
-        float vy = currPlayer.getVy();
-
-        // On trie les sprites dans l'ordre décroissant des distances au joueur pour afficher les plus proches en dernier (au premier plan)
-        for (Sprite s : sprites) {
-            s.updateLocalCoordinates(currPlayer);
-        }
-        Collections.sort(sprites);
-
         for (Sprite currSprite : sprites) {
             float spriteScreenPosX = currSprite.getLocalX();
             float spriteScreenPosY = currSprite.getLocalY();
@@ -310,7 +307,6 @@ public class GameRenderer extends Pane {
                 }
             }
         }
-
     }
 
     /**

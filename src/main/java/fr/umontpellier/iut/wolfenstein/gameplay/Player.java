@@ -102,7 +102,7 @@ public class Player {
         if (isValidPosition(posX, posY + dy)) {
             posY += dy;
         }
-        sprite.updatePos(posX, posY);
+        sprite.setPos(posX, posY);
     }
 
     /**
@@ -241,6 +241,6 @@ public class Player {
         this.posY = Float.parseFloat(info[1]);
         this.vx = Float.parseFloat(info[2]);
         this.vy = Float.parseFloat(info[3]);
-        sprite.updatePos(posX, posY);
+        sprite.setPos(posX, posY);
     }
 }
