@@ -34,7 +34,7 @@ public class GameRenderer extends Pane {
     private final int realHeight = 300;
 
 
-    private AnimationTimer renderer;
+    private AnimationTimer animationTimer;
 
     public GameRenderer(Player p, Minimap map) {
         zBuffer = new float[realWidth];
@@ -46,14 +46,14 @@ public class GameRenderer extends Pane {
         context.scale(drawWidth / (float) realWidth, drawHeight / (float) realHeight);
         context.setImageSmoothing(false);
         monImage = new WritableImage(realWidth, realHeight);
-        dispLoop();
+        animationTimer = new WolfAnimationTimer();
     }
 
     public void setMap(Map map) {
-        renderer.stop();
+        animationTimer.stop();
         worldMap = map.getWorldMap();
         sprites = map.getSprites();
-        renderer.start();
+        animationTimer.start();
     }
 
     /**
@@ -67,54 +67,52 @@ public class GameRenderer extends Pane {
         monImage.getPixelWriter().setColor(x, y, c);
     }
 
-    /**
-     * La méthode principale, s'occupant des algorithme de détection des murs et appelle les méthode de graphisme
-     */
-    private void dispLoop() {
-        renderer = new AnimationTimer() {
-            private long lastUpdate = 0;
-            private long lastCheck = 0;
-            private long fps = 0;
+    private class WolfAnimationTimer extends AnimationTimer {
+        private long lastUpdate = 0;
+        private long lastCheck = 0;
+        private long fps = 0;
 
-            @Override
-            public void handle(long now) {
+        /**
+         * Méhode qui est appelée automatiquement à chaque frame et qui se charge de mettre à jour l'état du jeu
+         * et l'affichage
+         */
+        @Override
+        public void handle(long now) {
 
-                // On actualise le temps local de chaque sprite pour permettre l'animation de ces derniers
-                for (Sprite sprite : sprites) {
-                    sprite.setCurrTime(now);
-                }
-
-                // On démarre l'algorithme de dessin du sol/plafond
-                drawFloor();
-
-                // On démarre l'algorithme de dessin des murs
-                drawWalls();
-
-                // On démarre l'algorithme de dessin des sprites
-                drawSprites();
-
-
-                // On dessine le buffer des pixels à l'écran en une seule fois (réduit le lag)
-                context.drawImage(monImage, 0, 0);
-
-                // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
-                float frameTime = (now - lastUpdate) / 1_000_000_000f;
-                currPlayer.setMoveSpeed(frameTime * 5);
-                currPlayer.setRotSpeed(frameTime * 3);
-                currPlayer.moveCharacter();
-
-                // On calcule les images par seconde une fois par seconde
-                if (now - lastCheck >= 1_000_000_000) {
-                    fps = 1_000 / ((now - lastUpdate) / 1_000_000);
-                    lastCheck = now;
-                }
-                minimap.update(fps);
-                // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
-                lastUpdate = now;
+            // On actualise le temps local de chaque sprite pour permettre l'animation de ces derniers
+            for (Sprite sprite : sprites) {
+                sprite.setCurrTime(now);
             }
-        };
-    }
 
+            // On démarre l'algorithme de dessin du sol/plafond
+            drawFloor();
+
+            // On démarre l'algorithme de dessin des murs
+            drawWalls();
+
+            // On démarre l'algorithme de dessin des sprites
+            drawSprites();
+
+
+            // On dessine le buffer des pixels à l'écran en une seule fois (réduit le lag)
+            context.drawImage(monImage, 0, 0);
+
+            // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
+            float frameTime = (now - lastUpdate) / 1_000_000_000f;
+            currPlayer.setMoveSpeed(frameTime * 5);
+            currPlayer.setRotSpeed(frameTime * 3);
+            currPlayer.moveCharacter();
+
+            // On calcule les images par seconde une fois par seconde
+            if (now - lastCheck >= 1_000_000_000) {
+                fps = 1_000 / ((now - lastUpdate) / 1_000_000);
+                lastCheck = now;
+            }
+            minimap.update(fps);
+            // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
+            lastUpdate = now;
+        }
+    }
 
     private void drawFloor() {
 
