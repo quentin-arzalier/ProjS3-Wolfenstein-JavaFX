@@ -34,10 +34,10 @@ public class Enemy extends Sprite{
 
         String tex;
         if (currFrame != 0){
-            tex = "sprites/garde/" + Direction(playerX,playerY) +"/"+ "garde" + currFrame + ".png";
+            tex = "sprites/garde/" + direction(px, py) +"/"+ "garde" + currFrame + ".png";
         }
         else {
-            tex = "sprites/garde/" + Direction(playerX,playerY) +"/garde.png";
+            tex = "sprites/garde/" + direction(px, py) +"/garde.png";
         }
 
 
@@ -69,7 +69,7 @@ public class Enemy extends Sprite{
      * @param playerY La position Y du joueur
      * @return L'indice du dossier dans lequel se trouve l
      */
-    public String Direction(float playerX, float playerY){
+    public String direction(float playerX, float playerY){
         double DistY = playerY - getPosY();
 
         double rayonXG = getPosX() - (Math.abs(DistY)/2) ;
