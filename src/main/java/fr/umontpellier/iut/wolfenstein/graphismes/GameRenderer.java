@@ -70,7 +70,6 @@ public class GameRenderer extends Pane {
     private class WolfAnimationTimer extends AnimationTimer {
         private long lastUpdate = 0;
         private long lastCheck = 0;
-        private long fps = 0;
 
         /**
          * Méhode qui est appelée automatiquement à chaque frame et qui se charge de mettre à jour l'état du jeu
@@ -105,10 +104,10 @@ public class GameRenderer extends Pane {
 
             // On calcule les images par seconde une fois par seconde
             if (now - lastCheck >= 1_000_000_000) {
-                fps = 1_000 / ((now - lastUpdate) / 1_000_000);
+                long fps = 1_000_000_000 / (now - lastUpdate);
                 lastCheck = now;
+                minimap.update(fps);
             }
-            minimap.update(fps);
             // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
             lastUpdate = now;
         }
