@@ -34,10 +34,10 @@ public class Enemy extends Sprite{
 
         String tex;
         if (currFrame != 0){
-            tex = "sprites/garde/" + direction(px, py) +"/"+ "garde" + currFrame + ".png";
+            tex = "sprites/garde/" + direction(playerX, playerY) +"/"+ "garde" + currFrame + ".png";
         }
         else {
-            tex = "sprites/garde/" + direction(px, py) +"/garde.png";
+            tex = "sprites/garde/" + direction(playerX, playerY) +"/garde.png";
         }
 
 
