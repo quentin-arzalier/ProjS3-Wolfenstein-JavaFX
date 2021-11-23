@@ -97,10 +97,8 @@ public class GameRenderer extends Pane {
             context.drawImage(monImage, 0, 0);
 
             // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
-            float frameTime = (now - lastUpdate) / 1_000_000_000f;
-            currPlayer.setMoveSpeed(frameTime * 5);
-            currPlayer.setRotSpeed(frameTime * 3);
-            currPlayer.moveCharacter();
+            float deltaTime = (now - lastUpdate) / 1_000_000_000f;
+            currPlayer.moveCharacter(deltaTime);
 
             // On calcule les images par seconde une fois par seconde
             if (now - lastCheck >= 1_000_000_000) {

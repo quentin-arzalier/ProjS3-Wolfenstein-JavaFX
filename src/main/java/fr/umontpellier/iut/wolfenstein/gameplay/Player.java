@@ -25,8 +25,8 @@ public class Player {
     private float camPitch = 0;
 
     // Les vitesses de déplacement du joueur
-    private float moveSpeed = 0;
-    private float rotSpeed = 0;
+    private float moveSpeed = 5;
+    private float rotSpeed = 3;
 
     // Rayon du joueur, pour les collisions avec les murs
     private static final float radius = .1f;
@@ -108,17 +108,17 @@ public class Player {
     /**
      * Déplace le joueur en fonction des touches appuyées
      */
-    public void moveCharacter() {
+    public void moveCharacter(float deltaTime) {
         if (pressedKeys.contains(KeyCode.UP) || pressedKeys.contains(KeyCode.W)) {
-            move(vx * moveSpeed, vy * moveSpeed);
+            move(vx * moveSpeed * deltaTime, vy * moveSpeed * deltaTime);
         }
         if (pressedKeys.contains(KeyCode.DOWN) || pressedKeys.contains(KeyCode.S)) {
-            move(-vx * moveSpeed, -vy * moveSpeed);
+            move(-vx * moveSpeed * deltaTime, -vy * moveSpeed * deltaTime);
         }
         if (pressedKeys.contains(KeyCode.LEFT) || pressedKeys.contains(KeyCode.A)) {
             if (pressedKeys.contains(KeyCode.ALT)) {
                 // déplacement latéral
-                move(vy * moveSpeed, -vx * moveSpeed);
+                move(vy * moveSpeed * deltaTime, -vx * moveSpeed * deltaTime);
             } else {
                 // pivotement
                 float x = vx;
@@ -130,7 +130,7 @@ public class Player {
         if (pressedKeys.contains(KeyCode.RIGHT) || pressedKeys.contains(KeyCode.D)) {
             if (pressedKeys.contains(KeyCode.ALT)) {
                 // déplacement latéral
-                move(-vy * moveSpeed, vx * moveSpeed);
+                move(-vy * moveSpeed * deltaTime, vx * moveSpeed * deltaTime);
             } else {
                 // pivotement
                 float x = vx;
@@ -218,14 +218,6 @@ public class Player {
 
     public Color getColor() {
         return color;
-    }
-
-    public void setMoveSpeed(float moveSpeed) {
-        this.moveSpeed = moveSpeed;
-    }
-
-    public void setRotSpeed(float rotSpeed) {
-        this.rotSpeed = rotSpeed;
     }
 
     public Sprite getSprite() {
