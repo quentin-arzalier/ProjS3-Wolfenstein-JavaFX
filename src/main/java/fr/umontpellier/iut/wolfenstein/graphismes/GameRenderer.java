@@ -370,7 +370,7 @@ public class GameRenderer extends Pane {
      * @return La couleur du pixel à dessiner
      */
 
-    private Color chooseColor(int hit,int side,int texX,int texY){
+    public Color chooseColor(int hit,int side,int texX,int texY){
         return MurType.getById(hit).getText(side).getPixelReader().getColor(texX,texY);
     }
 
@@ -383,7 +383,7 @@ public class GameRenderer extends Pane {
      * @param posY Les coordonnées Y du joueur
      * @return Une Map contenant toutes les infos nécessaires au remplissage de l'image, identifiées par leur nom
      */
-    private HashMap<String, Number> startDDA(float rayDirX, float rayDirY, float posX, float posY){
+    public HashMap<String, Number> startDDA(float rayDirX, float rayDirY, float posX, float posY){
         double distX = getDist(rayDirX, posX);
         double distY = getDist(rayDirY, posY);
         int xi = (int) posX;
@@ -470,7 +470,7 @@ public class GameRenderer extends Pane {
      * @param pos Il s'agit de la position du joueur sur l'axe donné
      * @return La distance normalisée du prochain mur
      */
-    private double getDist(double rayDir, double pos){
+    public double getDist(double rayDir, double pos){
         double dist;
         double delta;
         if (rayDir == 0) {
@@ -490,7 +490,7 @@ public class GameRenderer extends Pane {
         return dist;
     }
 
-    private HashMap<String, Number> getSlopeDist(double rayDirX, double rayDirY, double posX, double posY, int hit, int side) {
+    public HashMap<String, Number> getSlopeDist(double rayDirX, double rayDirY, double posX, double posY, int hit, int side) {
 
         // On va utiliser le théorème de Thalès et le théorème de pythagore pour calculer la taille du mur en pente (oui)
         // Se référer au dessin Slope_wall.png pour comprendre les variables

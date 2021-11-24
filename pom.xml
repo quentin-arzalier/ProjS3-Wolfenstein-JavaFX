@@ -14,6 +14,7 @@
         <maven.compiler.target>1.11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -38,31 +39,41 @@
             <artifactId>javafx-media</artifactId>
             <version>12.0.2</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.4.0-M1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>5.4.0-M1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.4.0-M1</version>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>RELEASE</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.6.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+            <version>1.6.2</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--dependency>
             <groupId>org.testfx</groupId>
             <artifactId>testfx-core</artifactId>
             <version>4.0.16-alpha</version>
@@ -74,32 +85,27 @@
             <artifactId>testfx-junit5</artifactId>
             <version>4.0.16-alpha</version>
             <scope>test</scope>
-        </dependency>
+        </dependency-->
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.3.3</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M4</version>
-                <configuration>
-                    <argLine>--add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED</argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.22.0</version>
-            </plugin>
-        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <filtering>false</filtering>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.fxml</include>
+                </includes>
+            </resource>
+        </resources>
+
     </build>
 
 </project>
