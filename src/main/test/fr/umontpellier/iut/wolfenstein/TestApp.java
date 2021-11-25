@@ -13,7 +13,7 @@ public class TestApp extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage){
         Pane root = new Pane();
         Scene scene = new Scene(root);
         stage.setScene(scene);

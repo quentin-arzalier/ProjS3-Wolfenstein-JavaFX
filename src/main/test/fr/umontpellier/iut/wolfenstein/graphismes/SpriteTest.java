@@ -1,4 +1,5 @@
-package test.fr.umontpellier.iut.wolfenstein.graphismes;
+package fr.umontpellier.iut.wolfenstein.graphismes;
+
 
 import fr.umontpellier.iut.wolfenstein.TestApp;
 import org.junit.jupiter.api.BeforeAll;
