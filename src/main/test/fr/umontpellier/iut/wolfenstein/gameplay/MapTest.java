@@ -4,9 +4,11 @@ package fr.umontpellier.iut.wolfenstein.gameplay;
 import fr.umontpellier.iut.wolfenstein.TestApp;
 import fr.umontpellier.iut.wolfenstein.gameplay.Map;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -51,7 +53,16 @@ class MapTest {
     }
 
     @Test
-    void textureMurQuelconqueInconnu() {
-        assertEquals(1,1);
+    void MurQuelconqueDevientInconnu() {
+        Map map = new Map("test/coulinconnue.png");
+        int[][] world = map.getWorldMap();
+        boolean test = true;
+        int i = 0; int j = 0;
+        while(i < world.length && j <world[0].length && test){
+            test = (world[i][j]==0);
+            i++;
+            j++;
+        }
+        assertTrue(test);
     }
 }

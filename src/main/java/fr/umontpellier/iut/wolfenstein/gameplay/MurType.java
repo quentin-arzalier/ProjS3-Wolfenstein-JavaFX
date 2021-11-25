@@ -23,6 +23,7 @@ public enum MurType {
     GLASSCORNERDOWN(10), //Cyan clair
     UNKNOWN(0); //PURPLE
 
+
     /** L'identifiant du mur est un entier. C'est utile pour la génération de la minimap et de la map elle-même. */
     private final int id;
 
