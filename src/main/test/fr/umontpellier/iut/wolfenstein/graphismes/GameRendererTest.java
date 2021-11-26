@@ -30,11 +30,8 @@ class GameRendererTest {
     @BeforeEach
     void setMapUp(){
         // La carte est une carte carrée de taille 5x5 avec un contour rouge (mur type 1)
-        myMap = new Map("test/contours.png");
-        myMiniMap = new Minimap();
-        myPlayer = new Player(Color.AQUA, 1);
-        moteur = new GameRenderer(myPlayer, myMiniMap);
-        moteur.setMap(myMap);
+        moteur = GameRenderer.getInstance();
+        moteur.setMap(new Map("test/contours.png"));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -79,22 +76,22 @@ class GameRendererTest {
 
     @Test
     void infosDDACorrectesJoueurMilieuSalleRegardeX(){
-        HashMap<String, Number> ddaInfo = moteur.startDDA(1, 0, 2.5f, 2.5f);
-        assertEquals(1.5, ddaInfo.get("t"));
-        assertEquals(1, ddaInfo.get("hit0"));
-        assertEquals(4.0, ddaInfo.get("newPosX0"));
-        assertEquals(2.5, ddaInfo.get("newPosY0"));
-        assertEquals(0, ddaInfo.get("side0"));
+        DDAInfo ddaInfo = moteur.startDDA(1, 0, 2.5f, 2.5f);
+        assertEquals(1.5, ddaInfo.getWallDist());
+        assertEquals(1,   ddaInfo.getHit());
+        assertEquals(4.0, ddaInfo.getNewPosX());
+        assertEquals(2.5, ddaInfo.getNewPosY());
+        assertEquals(0,   ddaInfo.getSide());
     }
 
     @Test
     void infosDDACorrectesJoueurMilieuSalleRegardeY(){
-        HashMap<String, Number> ddaInfo = moteur.startDDA(0, 1, 2.5f, 2.5f);
-        assertEquals(1.5, ddaInfo.get("t"));
-        assertEquals(1, ddaInfo.get("hit0"));
-        assertEquals(2.5, ddaInfo.get("newPosX0"));
-        assertEquals(4.0, ddaInfo.get("newPosY0"));
-        assertEquals(1, ddaInfo.get("side0"));
+        DDAInfo ddaInfo = moteur.startDDA(0, 1, 2.5f, 2.5f);
+        assertEquals(1.5, ddaInfo.getWallDist());
+        assertEquals(1,   ddaInfo.getHit());
+        assertEquals(2.5, ddaInfo.getNewPosX());
+        assertEquals(4.0, ddaInfo.getNewPosY());
+        assertEquals(1,   ddaInfo.getSide());
     }
 
     @Test

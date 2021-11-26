@@ -1,8 +1,8 @@
 package fr.umontpellier.iut.wolfenstein.graphismes;
 
+import fr.umontpellier.iut.wolfenstein.gameplay.MainPlayer;
 import fr.umontpellier.iut.wolfenstein.gameplay.MurType;
 import fr.umontpellier.iut.wolfenstein.gameplay.Map;
-import fr.umontpellier.iut.wolfenstein.gameplay.Player;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -12,48 +12,58 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 
 public class GameRenderer extends Pane {
 
+    private static GameRenderer instance;
+
     private int[][] worldMap;
-    private final float[] zBuffer;
+    private final double[] zBuffer;
     private ArrayList<Sprite> sprites;
 
 
     private final WritableImage monImage;
     private final GraphicsContext context;
-    private final Player currPlayer;
+    private final MainPlayer currPlayer;
     private final Minimap minimap;
 
 
     private final int texSize = 64;
-    private final int drawWidth = 480*2;
-    private final int drawHeight = 300*2;
-    private final int realWidth = 480;
-    private final int realHeight = 300;
+    private final int scaleFactor = 2;
+    private final int screenWidth = 480;
+    private final int screenHeight = 300;
 
 
-    private AnimationTimer renderer;
+    private final RenderAnimationTimer mainLoop;
 
-    public GameRenderer(Player p, Minimap map){
-        zBuffer = new float[realWidth];
-        Canvas base = new Canvas(drawWidth, drawHeight);
-        currPlayer = p;
-        minimap = map;
+    public static GameRenderer getInstance(){
+        if (instance == null){
+            instance = new GameRenderer();
+            instance.setMap(new Map("levels/level0.png"));
+        }
+        return instance;
+    }
+
+    private GameRenderer(){
+        zBuffer = new double[screenWidth];
+        Canvas base = new Canvas(screenWidth *scaleFactor, screenHeight *scaleFactor);
+        currPlayer = MainPlayer.getInstance();
+        minimap = Minimap.getInstance();
         context = base.getGraphicsContext2D();
         this.getChildren().add(base);
-        context.scale(drawWidth /(float) realWidth, drawHeight /(float) realHeight);
+        context.scale(scaleFactor, scaleFactor);
         context.setImageSmoothing(false);
-        monImage = new WritableImage(realWidth, realHeight);
-        dispLoop();
+        monImage = new WritableImage(screenWidth, screenHeight);
+        mainLoop = new RenderAnimationTimer();
+        mainLoop.start();
     }
 
     public void setMap(Map map){
-        renderer.stop();
+        mainLoop.stop();
         worldMap = map.getWorldMap();
         sprites = map.getSprites();
-        renderer.start();
+        currPlayer.setWorldMap(map.getWorldMap());
+        mainLoop.start();
     }
 
     /**
@@ -66,55 +76,53 @@ public class GameRenderer extends Pane {
         monImage.getPixelWriter().setColor(x, y, c);
     }
 
-    /**
-     * La méthode principale, s'occupant des algorithme de détection des murs et appelle les méthode de graphisme
-     */
-    private void dispLoop() {
-        renderer = new AnimationTimer() {
-            private long lastUpdate = 0;
-            private long lastCheck = 0;
-            private long fps = 0;
+    private class RenderAnimationTimer extends AnimationTimer {
+        /**
+         * Temps écoulé au moment de l'éxecution du dernier cycle de handle en secondes
+         */
+        private float lastUpdate = 0;
 
-            @Override
-            public void handle(long now) {
+        @Override
+        public void handle(long now) {
+            float nowSecondes = now / 1_000_000_000f;
+            float deltaTime = (nowSecondes-lastUpdate);
 
-                // On actualise le temps local de chaque sprite pour permettre l'animation de ces derniers
-                for (Sprite sprite : sprites){
-                    sprite.setCurrTime(now);
-                }
-
-                // On démarre l'algorithme de dessin du sol/plafond
-                drawFloor();
-
-                // On démarre l'algorithme de dessin des murs
-                drawWalls();
-
-                // On démarre l'algorithme de dessin des sprites
-                drawSprites();
-
-
-                // On dessine le buffer des pixels à l'écran en une seule fois (réduit le lag)
-                context.drawImage(monImage, 0, 0);
-
-                // On calcule la vitesse de déplacement du joueur pour qu'elle soit constance même avec des variations de fps
-                float frameTime = (now - lastUpdate) / 1_000_000_000f;
-                currPlayer.setMoveSpeed(frameTime * 5);
-                currPlayer.setRotSpeed(frameTime * 3);
-                currPlayer.moveCharacter(worldMap);
-
-                // On calcule les images par seconde une fois par seconde
-                if (now - lastCheck >= 1_000_000_000) {
-                    fps = 1_000 / ((now - lastUpdate) / 1_000_000);
-                    lastCheck = now;
-                }
-                minimap.update(fps);
-                // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
-                lastUpdate = now;
+            // Le premier deltaTime est toujours énorme pour une certaine raison
+            if (deltaTime > 50){
+                deltaTime = 0;
             }
-        };
+
+            update(deltaTime);
+
+            draw();
+            // On actualise la variable qui stocke le moment d'exécution de l'ancienne boucle
+            lastUpdate = nowSecondes;
+        }
     }
 
+    private void update(float deltaTime){
+        currPlayer.update(deltaTime);
+        minimap.update(deltaTime);
+        // On actualise le temps local de chaque sprite pour permettre l'animation de ces derniers
+        for (Sprite sprite : sprites){
+            sprite.update(deltaTime);
+        }
+    }
 
+    private void draw(){
+
+        // On démarre l'algorithme de dessin du sol/plafond
+        drawFloor();
+
+        // On démarre l'algorithme de dessin des murs
+        drawWalls();
+
+        // On démarre l'algorithme de dessin des sprites
+        drawSprites();
+
+        // On dessine le buffer des pixels à l'écran en une seule fois (réduit le lag)
+        context.drawImage(monImage, 0, 0);
+    }
     private void drawFloor(){
 
         // Informations joueur
@@ -122,25 +130,23 @@ public class GameRenderer extends Pane {
         float posY = currPlayer.getPosY();
         float vx = currPlayer.getVx();
         float vy = currPlayer.getVy();
-        float latX = currPlayer.getLatX();
-        float latY = currPlayer.getLatY();
         float camPitch = currPlayer.getCamPitch();
 
 
         // La position de l'horizon
-        float horizon = realHeight/2f;
+        float horizon = screenHeight /2f;
 
 
         // Le vecteur caméra le plus à gauche (x = 0)
-        float camVectXG = vx - latX;
-        float camVectYG = vy - latY;
+        float camVectXG = vx + vy;
+        float camVectYG = vy - vx;
 
         // Le vecteur caméra le plus à droite (x = realWidth)
-        float camVectXD = vx + latX;
-        float camVectYD = vy + latY;
+        float camVectXD = vx - vy;
+        float camVectYD = vy + vx;
 
         // On dessine ligne par ligne donc on itère sur l'axe Y
-        for (int y = 0; y < realHeight; y++) {
+        for (int y = 0; y < screenHeight; y++) {
             boolean isFloor = y > horizon + camPitch;
 
             // La position de la ligne que l'on dessine en fonction de la ligne d'horizon
@@ -150,15 +156,15 @@ public class GameRenderer extends Pane {
             float rowDist = horizon / scanLineY;
 
             // Pas permettant de capter la position de la texture du mur/du sol
-            float pasX = rowDist * (camVectXD - camVectXG)/realWidth;
-            float pasY = rowDist * (camVectYD - camVectYG)/realWidth;
+            float pasX = rowDist * (camVectXD - camVectXG)/ screenWidth;
+            float pasY = rowDist * (camVectYD - camVectYG)/ screenWidth;
 
             // Les coordonnées réelles de la première colonne :
             float solX = posX + rowDist * camVectXG;
             float solY = posY + rowDist * camVectYG;
 
             // On commence le dessin ligne par ligne
-            for (int x = 0; x < realWidth; x++) {
+            for (int x = 0; x < screenWidth; x++) {
                 int texX = (int)(texSize * (solX % 1)) & (texSize -1);
                 int texY = (int)(texSize * (solY % 1)) & (texSize -1);
 
@@ -184,78 +190,60 @@ public class GameRenderer extends Pane {
         float posY = currPlayer.getPosY();
         float vx = currPlayer.getVx();
         float vy = currPlayer.getVy();
-        float latX = currPlayer.getLatX();
-        float latY = currPlayer.getLatY();
         float camPitch = currPlayer.getCamPitch();
 
-        for (int x = 0; x < realWidth; x++) {
-            float camX = 2 * x / (float) realWidth -1;
-            float rayDirX = vx + latX * camX;
-            float rayDirY = vy + latY * camX;
+        for (int x = 0; x < screenWidth; x++) {
+            float camX = 2 * x / (float) screenWidth -1;
+            float rayDirX = vx - vy * camX;
+            float rayDirY = vy + vx * camX;
 
 
-            HashMap<String, Number> ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
+            DDAInfo ddaInfo = startDDA(rayDirX, rayDirY, posX, posY);
+
+            double wallDist = ddaInfo.getWallDist();
+            // On récupère toutes les informations importantes sur le mur que l'on veut dessiner
+            double newPosX = ddaInfo.getNewPosX();
+            double newPosY = ddaInfo.getNewPosY();
+            int wallHeight =  ddaInfo.getWallHeight();
+            int hit = ddaInfo.getHit();
+            int side = ddaInfo.getSide();
+
+            // Le mur d'ID 7 n'est dessiné que des côtés nord et sud et le 8 des côtés ouest et est.
+            // C'est une tentative de faire des murs fins et ça rend presque bien!
+            if (hit == 7 && side == 0 || hit == 8 && side == 1){
+                continue;
+            }
 
 
-
-            int nbHits = ddaInfo.get("nbHits").intValue();
-            float t = ddaInfo.get("t").floatValue();
-
-            // Si on passe par des murs transparents, nbHits sera supérieur à 0. On veut parcourir la liste des murs dans le sens inverse
-            for (int i = nbHits-1; i >= 0; i--) {
+            // On détermine quel pixel de la texture doit être dessiné en premier (Sur quelle fraction du mur notre rayon a tapé)
+            float wallTextY = 0;
+            double pixelPos = (side == 1) ? newPosX : newPosY;
+            int wallTextX = (int) ((pixelPos%1) * texSize);
 
 
-                // On récupère toutes les informations importantes sur le mur que l'on veut dessiner
-                float newPosX = ddaInfo.get("newPosX"+i).floatValue();
-                float newPosY = ddaInfo.get("newPosY"+i).floatValue();
-                int wallHeight =  ddaInfo.get("wallHeight"+i).intValue();
-                int hit = ddaInfo.get("hit"+i).intValue();
-                int side = ddaInfo.get("side"+i).intValue();
+            //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
+            //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
 
-                // Le mur d'ID 7 n'est dessiné que des côtés nord et sud et le 8 des côtés ouest et est.
-                // C'est une tentative de faire des murs fins et ça rend presque bien!
-                if (hit == 7 && side == 0 || hit == 8 && side == 1){
-                    continue;
-                }
+            // On calcule le pixel de hauteur ou commencer à dessiner le mur.
+            int debutDessin = -wallHeight / 2 + screenHeight / 2 + (int)(camPitch);
 
+            // S'il est inférieur à 0, on ne commence pas la lecture du fichier texture tout en haut
+            if (debutDessin < 0){
+                wallTextY = -debutDessin/(float)wallHeight*texSize;
+                debutDessin = 0;
+            }
 
-                // On détermine quel pixel de la texture doit être dessiné en premier (Sur quelle fraction du mur notre rayon a tapé)
-                float wallTextY = 0;
-                float pixelPos = (side == 1) ? newPosX : newPosY;
-                int wallTextX = (int) ((pixelPos%1) * texSize);
+            // On calcule aussi la fin du dessin et on vérifie les mêmes choses.
+            int finDessin = wallHeight / 2 + screenHeight / 2 + (int)(camPitch);
+            if (finDessin >= screenHeight) finDessin = screenHeight - 1;
 
-
-                //if (side == 0 && rayDirX > 0) wallTextX = texSize - wallTextX - 1;
-                //if (side == 1 && rayDirY < 1) wallTextX = texSize - wallTextX - 1;
-
-                // On calcule le pixel de hauteur ou commencer à dessiner le mur.
-                int debutDessin = -wallHeight / 2 + realHeight / 2 + (int)(camPitch);
-
-                // S'il est inférieur à 0, on ne commence pas la lecture du fichier texture tout en haut
-                if (debutDessin < 0){
-                    wallTextY = -debutDessin/(float)wallHeight*texSize;
-                    debutDessin = 0;
-                }
-
-                // On calcule aussi la fin du dessin et on vérifie les mêmes choses.
-                int finDessin = wallHeight / 2 + realHeight / 2 + (int)(camPitch);
-                if (finDessin >= realHeight) finDessin = realHeight - 1;
-
-                for (int y = debutDessin; y < finDessin; y++) {
-                    Color color = chooseColor(hit, side, wallTextX, (int)wallTextY);
-
-                    // Si on a traversé plusieurs murs et que le mur que l'on dessine n'est pas le dernier, on doit calculer la moyenne des couleurs RGB.
-                    if (nbHits > 1 && i < nbHits-1){
-                        Color oldColor = monImage.getPixelReader().getColor(x, y);
-                        color = new Color((color.getRed()+oldColor.getRed())/2, (color.getGreen()+oldColor.getGreen())/2, (color.getBlue()+oldColor.getBlue())/2, 1);
-                    }
-
-                    changePixel(x, y, color);
-                    wallTextY += texSize /(double) wallHeight;
-                }
+            for (int y = debutDessin; y < finDessin; y++) {
+                Color color = chooseColor(hit, side, wallTextX, (int)wallTextY);
+                changePixel(x, y, color);
+                wallTextY += texSize /(double) wallHeight;
             }
             // On enregistre la position du mur solide touché pour savoir si on dessine ou non les différents sprites.
-            zBuffer[x] = t;
+            zBuffer[x] = wallDist;
         }
     }
 
@@ -268,10 +256,6 @@ public class GameRenderer extends Pane {
         // Coordonnées du vecteur vision du joueur
         float vx = currPlayer.getVx();
         float vy = currPlayer.getVy();
-
-        // Coordonnées du vecteur caméra du joueur (orthogonal au vecteur vision)
-        float latX = currPlayer.getLatX();
-        float latY = currPlayer.getLatY();
 
         // On trie les sprites dans l'ordre décroissant des distances au joueur pour afficher les plus proches en dernier (au premier plan)
         for (Sprite s : sprites) {
@@ -313,29 +297,29 @@ public class GameRenderer extends Pane {
              * Calculons le déterminant de la matrice M du plan pour trouver les coordonnées du sprite dans ce dernier.
              */
 
-            float d = (latX * vy - vx * latY);
+            float d = (-vy * vy - vx * vx);
 
             // On utilise le déterminant pour inverser correctement la matrice et replacer le sprite dans le nouveau plan
-            float spriteScreenPosX = (latX*vectorY - latY*vectorX)/d; // valeur forcément positive
+            float spriteScreenPosX = (-vy*vectorY - vx*vectorX)/d; // valeur forcément positive
             float spriteScreenPosY = (vy*vectorX - vx*vectorY)/d;
 
             // Il faut désormais replacer ces valeurs sur un X de coordonnées realWidth et non mapSize
-            int screenPosX  = (int) ((realWidth / 2) * (1 + spriteScreenPosY / spriteScreenPosX));
+            int screenPosX  = (int) ((screenWidth / 2) * (1 + spriteScreenPosY / spriteScreenPosX));
             // La taille en pixels du sprite sur l'écran.
-            int tailleSprite = (int) Math.abs(realHeight / spriteScreenPosX);
+            int tailleSprite = (int) Math.abs(screenHeight / spriteScreenPosX);
 
             int demiSprite = tailleSprite/2;
 
             int gaucheSprite = screenPosX - demiSprite;
             if (gaucheSprite < 0) gaucheSprite = 0;
             int droiteSprite = screenPosX + demiSprite;
-            if (droiteSprite >= realWidth) droiteSprite = realWidth - 1;
+            if (droiteSprite >= screenWidth) droiteSprite = screenWidth - 1;
 
             int camPitch = (int)currPlayer.getCamPitch();
-            int hautSprite = realHeight/2 - demiSprite + camPitch;
+            int hautSprite = screenHeight /2 - demiSprite + camPitch;
             if (hautSprite < 0) hautSprite = 0;
-            int basSprite = realHeight/2 + demiSprite + camPitch;
-            if (basSprite >= realHeight) basSprite = realHeight - 1 ;
+            int basSprite = screenHeight /2 + demiSprite + camPitch;
+            if (basSprite >= screenHeight) basSprite = screenHeight - 1 ;
 
             // On dessine le sprite
             if (spriteScreenPosX > 0.5){ // On ne dessine le sprite que si il se trouve au moins 0.5 unités devant le joueur
@@ -346,7 +330,7 @@ public class GameRenderer extends Pane {
                     if (spriteScreenPosX < zBuffer[x]){ // On vérifie si la colonne à dessiner se trouve bien devant un mur
                         for (int y = hautSprite; y < basSprite; y++) {
 
-                            int texY = (y - camPitch - realHeight/2 + tailleSprite/2) * texSize / tailleSprite;
+                            int texY = (y - camPitch - screenHeight /2 + tailleSprite/2) * texSize / tailleSprite;
 
                             Color color = currSprite.getTex().getPixelReader().getColor(texX, texY);
                             if (color.getOpacity() != 0){
@@ -383,24 +367,24 @@ public class GameRenderer extends Pane {
      * @param posY Les coordonnées Y du joueur
      * @return Une Map contenant toutes les infos nécessaires au remplissage de l'image, identifiées par leur nom
      */
-    public HashMap<String, Number> startDDA(float rayDirX, float rayDirY, float posX, float posY){
+    public DDAInfo startDDA(float rayDirX, float rayDirY, float posX, float posY){
         double distX = getDist(rayDirX, posX);
         double distY = getDist(rayDirY, posY);
         int xi = (int) posX;
         int yi = (int) posY;
+
+
         double newPosX = posX;
         double newPosY = posY;
-
+        float wallDist = 0;
+        int wallHeight;
         int hit = 0;
-        int side;
-        double t = 0;
-        HashMap<String, Number> retour = new HashMap<>();
-        int nbHits = 0;
+        int side = 0;
 
         // Algorithme de détection des murs
         while (hit == 0) {
             if (distX <= distY) {
-                t += distX;
+                wallDist += distX;
                 if (rayDirX > 0){
                     xi++;
                     newPosX = newPosX + (1 - newPosX%1);
@@ -413,7 +397,7 @@ public class GameRenderer extends Pane {
                 side = 0;
             }
             else {
-                t += distY;
+                wallDist += distY;
                 if (rayDirY > 0){
                     yi++;
                     newPosY = newPosY + (1 - newPosY%1);
@@ -429,39 +413,9 @@ public class GameRenderer extends Pane {
             distY = getDist(rayDirY, newPosY);
 
             hit = worldMap[xi][yi];
-
-            if (hit != 0){
-                double oldX = newPosX;
-                double oldY = newPosY;
-                if (hit == 9 || hit == 10){
-                    HashMap<String, Number> slopeInfo =  getSlopeDist(rayDirX, rayDirY, newPosX, newPosY, hit, side);
-                    newPosX = slopeInfo.get("newPosX").doubleValue();
-                    newPosY = slopeInfo.get("newPosY").doubleValue();
-                    double distance = slopeInfo.get("distance").doubleValue();
-                    t += distance;
-                }
-                retour.put("hit"+nbHits, hit);
-                retour.put("side"+nbHits, side);
-                Number wallHeight = realHeight / t;
-                retour.put("wallHeight"+nbHits, wallHeight);
-                retour.put("newPosX"+nbHits, newPosX);
-                retour.put("newPosY"+nbHits, newPosY);
-                if (hit >= 7 && hit <= 10) {
-                    hit = 0;
-                    newPosX = oldX;
-                    newPosY = oldY;
-                }
-                nbHits++;
-
-            }
         }
 
-
-
-        retour.put("t", t);
-        retour.put("nbHits", nbHits);
-
-        return retour;
+        return new DDAInfo(newPosX, newPosY, wallDist, (int) (screenHeight / wallDist), hit, side);
     }
 
     /**
@@ -485,86 +439,7 @@ public class GameRenderer extends Pane {
                 delta = 1;
             }
             dist = Math.abs(delta / rayDir);
-            //System.out.println("delta = " + delta + ", rayDir = " + rayDir + ", pos = " + pos);
         }
         return dist;
-    }
-
-    public HashMap<String, Number> getSlopeDist(double rayDirX, double rayDirY, double posX, double posY, int hit, int side) {
-
-        // On va utiliser le théorème de Thalès et le théorème de pythagore pour calculer la taille du mur en pente (oui)
-        // Se référer au dessin Slope_wall.png pour comprendre les variables
-        double AB;
-        double BE = 0;
-        double AE;
-        double AC;
-        HashMap<String, Number> retour = new HashMap<>();
-        double newPosX = posX;
-        double newPosY = posY;
-
-
-        if (side == 0) {
-            if (rayDirY < 0){
-                AB = posY % 1;
-            }
-            else  {
-                AB = 1 - posY % 1;
-            }
-            double distX = getDist(rayDirX, newPosX);
-            double distY = getDist(rayDirY, newPosY);
-            BE += distY;
-            while (distX <= distY){
-                if (rayDirX > 0){
-                    newPosX = newPosX + (1 - newPosX%1);
-                }
-                else {
-                    newPosX = newPosX - (newPosX%1);
-                }
-                newPosY = newPosY + rayDirY * distX;
-                distX = getDist(rayDirX, newPosX);
-                distY = getDist(rayDirY, newPosY);
-                BE += distY;
-            }
-            AE = Math.sqrt(AB*AB + BE*BE); // Théorème de pythagore TMTC
-        }
-        else {
-            if (rayDirX < 0){
-                AB = posX % 1;
-            }
-            else  {
-                AB = 1 - posX % 1;
-            }
-            double distX = getDist(rayDirX, newPosX);
-            double distY = getDist(rayDirY, newPosY);
-            BE += distX;
-            while (distY < distX){
-                if (rayDirY > 0){
-                    newPosY = newPosY + (1 - newPosY%1);
-                }
-                else {
-                    newPosY = newPosY - (newPosY%1);
-                }
-                newPosX = newPosX + distY * rayDirX;
-                distX = getDist(rayDirX, newPosX);
-                distY = getDist(rayDirY, newPosY);
-                BE += distX;
-            }
-            AE = Math.sqrt(AB*AB + BE*BE); // Théorème de pythagore TMTC
-        }
-
-        double thalesCoef = AB/(AB+BE);
-        AC =  AE*thalesCoef;
-        if (rayDirY < 0 && rayDirX > 0 || rayDirX < 0 && rayDirY > 0){
-            AC = 1 - AC;
-        }
-
-        if (hit == 10) AC = 1 - AC;
-
-
-        retour.put("distance", AC);
-        retour.put("newPosX", newPosX);
-        retour.put("newPosY", newPosY);
-
-        return retour;
     }
 }

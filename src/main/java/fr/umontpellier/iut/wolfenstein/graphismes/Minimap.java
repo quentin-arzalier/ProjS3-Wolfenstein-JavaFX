@@ -19,18 +19,27 @@ import java.util.ArrayList;
  */
 public class Minimap extends StackPane {
 
+    private static Minimap instance;
+
     private final GraphicsContext contextBG;
     private final GraphicsContext contextPlayer;
     private final Text fpsCounter;
     private Image currImage;
     private float currScaleX;
     private float currScaleY;
-    private ArrayList<Player> joueurs;
+    private final ArrayList<Player> joueurs;
+
+    private float lastUpdate;
+    private int frames;
+
+
 
     public Minimap(){
         joueurs = new ArrayList<>();
         this.setMaxWidth(600);
         this.setMaxHeight(600);
+        this.lastUpdate = 0;
+        this.frames = 0;
 
         // Le canevas sur lequel sera dessiné la carte
         Canvas background = new Canvas(600, 600);
@@ -57,6 +66,14 @@ public class Minimap extends StackPane {
         this.getChildren().add(fpsCounter);
     }
 
+    public static Minimap getInstance() {
+        if (instance == null){
+            instance = new Minimap();
+            instance.setMap("levels/level0.png");
+        }
+        return instance;
+    }
+
     /**
      * Permet de changer l'image de fond de la carte
      * @param s L'adresse à laquelle se trouve la nouvelle image à dessiner
@@ -77,11 +94,16 @@ public class Minimap extends StackPane {
 
     /**
      * Cette méthode est appelée par le GameRenderer et permet de mettre à jour l'affichage de la carte.
-     * @param fps Le nombre actuel d'images par secondes de l'application
+     * @param deltaTime Le temps passé depuis la dernière actualisation (en secondes)
      */
-    public void update(long fps) {
+    public void update(float deltaTime) {
+        lastUpdate += deltaTime;
         contextPlayer.clearRect(0, 0, 600, 600); // On vide le canevas avant de le remplir à nouveau
-        fpsCounter.setText(Long.toString(fps));  // On actualise le texte affichant les images par secondes
+        if (lastUpdate >= 1){
+            lastUpdate -= 1;
+            fpsCounter.setText(Integer.toString(frames));  // On actualise le texte affichant les images par secondes
+            frames = 0;
+        }
         contextBG.drawImage(currImage, 0, 0);    // On dessine le niveau actuel en fond de carte
 
         // On itère sur chaque joueur présent dans la partie de jeu
@@ -90,18 +112,16 @@ public class Minimap extends StackPane {
             float posY = p.getPosY();
             float vx = p.getVx();
             float vy = p.getVy();
-            float latX = p.getLatX();
-            float latY = p.getLatY();
 
             // On calcule la position du joueur à l'échelle du canevas
             int pixelPosX = (int) (posX * 600 / currImage.getWidth());
             int pixelPosY = (int) (posY * 600 / currImage.getHeight());
 
             // Ces angles sont utilisés pour représenter le champ de vision des joueurs sur la carte
-            double angle1X = (posX + vx*3 - latX*1.5) * 600 / currImage.getWidth();
-            double angle1Y = (posY + vy*3 - latY*1.5) * 600 / currImage.getHeight();
-            double angle2X = (posX + vx*3 + latX*1.5) * 600 / currImage.getWidth();
-            double angle2Y = (posY + vy*3 + latY*1.5) * 600 / currImage.getHeight();
+            double angle1X = (posX + vx*3 + vy*1.5) * 600 / currImage.getWidth();
+            double angle1Y = (posY + vy*3 - vx*1.5) * 600 / currImage.getHeight();
+            double angle2X = (posX + vx*3 - vy*1.5) * 600 / currImage.getWidth();
+            double angle2Y = (posY + vy*3 + vx*1.5) * 600 / currImage.getHeight();
 
             // On dessine le champ de vision du joueur en jaune transparent sur la carte
             contextPlayer.setFill(new Color(0.8, 0.8, 0.0, 0.6));
@@ -113,5 +133,6 @@ public class Minimap extends StackPane {
             contextPlayer.strokeOval(pixelPosX-3, pixelPosY-3, 6, 6);
             contextPlayer.fillOval(pixelPosX-3, pixelPosY-3, 6, 6);
         }
+        frames++;
     }
 }

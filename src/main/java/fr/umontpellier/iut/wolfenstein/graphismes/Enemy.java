@@ -1,5 +1,6 @@
 package fr.umontpellier.iut.wolfenstein.graphismes;
 
+import fr.umontpellier.iut.wolfenstein.gameplay.MainPlayer;
 import javafx.scene.image.Image;
 
 /**
@@ -21,8 +22,8 @@ public class Enemy extends Sprite{
     /** Définit de manière non modifiable la vitesse de déplacement du sprite */
     private final float moveSpeed = 0.025f;
 
-    private long lastFrameTime;
-    private long lastMoveTime;
+    private float lastFrameTime;
+    private float lastMoveTime;
 
     public Enemy(float posX, float posY, String tex) {
         super(posX, posY, tex);
@@ -41,12 +42,12 @@ public class Enemy extends Sprite{
         }
 
 
-        if (getCurrTime() - lastFrameTime >= 200_000_000){
-            lastFrameTime = getCurrTime();
+        if (lastFrameTime >= 0.2f){
+            lastFrameTime -= 0.2f;
             nextFrame();
         }
-        if (getCurrTime() - lastMoveTime >= 1_000_000_000){
-            lastMoveTime = getCurrTime();
+        if (lastMoveTime >= 1){
+            lastMoveTime -= 1;
             if (currFrame == 0){
                 start();
                 changeDirection();
@@ -171,4 +172,10 @@ public class Enemy extends Sprite{
         }
     }
 
+    @Override
+    public void update(float deltaTime) {
+        super.update(deltaTime);
+        lastFrameTime += deltaTime;
+        lastMoveTime += deltaTime;
+    }
 }
