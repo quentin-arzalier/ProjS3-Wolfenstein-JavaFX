@@ -113,6 +113,7 @@ public class MainApp extends Application {
 
         // on instancie le moteur de jeu
         game = GameRenderer.getInstance();
+        game.setMap(createMap(0));
 
 
         setupWindow();

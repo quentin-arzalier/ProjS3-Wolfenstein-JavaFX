@@ -39,7 +39,6 @@ public class GameRenderer extends Pane {
     public static GameRenderer getInstance(){
         if (instance == null){
             instance = new GameRenderer();
-            instance.setMap(new Map("levels/level0.png"));
         }
         return instance;
     }
