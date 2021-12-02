@@ -34,7 +34,7 @@ public class Minimap extends StackPane {
 
 
 
-    public Minimap(){
+    private Minimap(){
         joueurs = new ArrayList<>();
         this.setMaxWidth(600);
         this.setMaxHeight(600);

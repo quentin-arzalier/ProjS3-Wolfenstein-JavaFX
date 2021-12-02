@@ -75,7 +75,7 @@ public class GameRenderer extends Pane {
         monImage.getPixelWriter().setColor(x, y, c);
     }
 
-    private class RenderAnimationTimer extends AnimationTimer {
+    private class  RenderAnimationTimer extends AnimationTimer {
         /**
          * Temps écoulé au moment de l'éxecution du dernier cycle de handle en secondes
          */

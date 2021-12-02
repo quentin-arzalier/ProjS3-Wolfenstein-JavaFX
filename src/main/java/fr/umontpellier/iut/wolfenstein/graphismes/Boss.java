@@ -13,7 +13,7 @@ public class Boss extends Enemy{
     }
 
     @Override
-    public String Direction(float playerX, float playerY) {
+    public String direction(float playerX, float playerY) {
         return "0";
     }
 }

@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * La classe Map permet de générer la matrice des murs utilisée par la logique du jeu ainsi que par les méthodes d'affichage de GameRenderer.
  * Elle permet aussi d'ajouter de charger les différents sprites, qui ne sont pas représentés dans la matrice worldMap (qui ne représente donc que les murs)
  */
-public class Map {
+public class    Map {
 
     private final int[][] worldMap;
     private final int width;
