@@ -17,11 +17,7 @@ public enum MurType {
     BOIS(4), //WHITE
     PIERREB(5), //YELLOW
     PORTEM(6), //PURPLE
-    GLASSNS(7), //Cyan clair
-    GLASSEW(8), //PURPLE
-    GLASSCORNERUP(9), //Cyan clair
-    GLASSCORNERDOWN(10), //Cyan clair
-    UNKNOWN(0); //PURPLE
+    UNKNOWN(99); //PURPLE
 
 
     /** L'identifiant du mur est un entier. C'est utile pour la génération de la minimap et de la map elle-même. */
@@ -38,7 +34,6 @@ public enum MurType {
     MurType(int id){
         this.id = id;                                                  //Attribution de l'ID désiré
         int texId = this.id;                                           //Duplication de l'ID, cela va nous permettre de gagner des opérations
-        if (id <= 10 && id >= 7) texId = 7;                            //Les ID compris entre 7 et 10 sont tous des types de vitres. Du coup, on va aller chercher la texture par défaut d'une vitre.
         this.tex = new Image("tex/"+texId+"A.png");                 //Ouverture des fichiers grâce à la classe Image de JavaFX
         this.shadeTex = new Image("tex/"+texId+"B.png");
     }
@@ -49,7 +44,7 @@ public enum MurType {
      * @return L'objet Image qui contient la texture du mur
     */
     public Image getText(int side) {
-        if (side == 1) {
+        if (side == 1 || side == 3) {
             return shadeTex;
         }
         else return tex;

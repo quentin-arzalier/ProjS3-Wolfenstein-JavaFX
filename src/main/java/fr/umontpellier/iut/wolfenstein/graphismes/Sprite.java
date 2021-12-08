@@ -1,5 +1,6 @@
 package fr.umontpellier.iut.wolfenstein.graphismes;
 
+import fr.umontpellier.iut.wolfenstein.gameplay.MainPlayer;
 import javafx.scene.image.Image;
 
 public class Sprite implements Comparable<Sprite>{
@@ -67,19 +68,16 @@ public class Sprite implements Comparable<Sprite>{
         this.tex = tex;
     }
 
-    public long getCurrTime() {
-        return currTime;
-    }
-
-    public void setCurrTime(long currTime) {
-        this.currTime = currTime;
-    }
-
     public int[][] getWorldmap() {
         return worldmap;
     }
 
     public void setWorldmap(int[][] worldmap) {
         this.worldmap = worldmap;
+    }
+
+    public void update(float deltaTime){
+        MainPlayer player = MainPlayer.getInstance();
+        setDist(player.getPosX(), player.getPosY());
     }
 }

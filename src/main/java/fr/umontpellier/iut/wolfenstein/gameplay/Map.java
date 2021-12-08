@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * La classe Map permet de générer la matrice des murs utilisée par la logique du jeu ainsi que par les méthodes d'affichage de GameRenderer.
  * Elle permet aussi d'ajouter de charger les différents sprites, qui ne sont pas représentés dans la matrice worldMap (qui ne représente donc que les murs)
  */
-public class Map {
+public class    Map {
 
     private final int[][] worldMap;
     private final int width;
@@ -49,18 +49,6 @@ public class Map {
                 else if (maCoul.equals(Color.PURPLE)){
                     worldMap[i][j] = 6;
                 }
-                else if (maCoul.equals(Color.web("#CCFFFF"))){
-                    worldMap[i][j] = 7;
-                }
-                else if (maCoul.equals(Color.web("#33CCCC"))){
-                    worldMap[i][j] = 8;
-                }
-                else if (maCoul.equals(Color.web("#CCFFCC"))){
-                    worldMap[i][j] = 9;
-                }
-                else if (maCoul.equals(Color.web("#99CCFF"))){
-                    worldMap[i][j] = 10;
-                }
                 else if (maCoul.equals(Color.SADDLEBROWN)){
                     sprites.add(new Sprite(i+0.5f, j+0.5f, "barrel"));
                     worldMap[i][j] = 0;
@@ -77,8 +65,11 @@ public class Map {
                     sprites.add(new Enemy(i+0.5f, j+0.5f, "garde"));
                     worldMap[i][j] = 0;
                 }
-                else {
+                else if (maCoul.equals(Color.BLACK)) {
                     worldMap[i][j] = 0;
+                }
+                else {
+                    worldMap[i][j] = 99;
                 }
             }
         }

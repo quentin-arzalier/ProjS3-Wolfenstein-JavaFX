@@ -1,6 +1,7 @@
 package fr.umontpellier.iut.wolfenstein;
 
 import fr.umontpellier.iut.wolfenstein.gameplay.MainMenu;
+import fr.umontpellier.iut.wolfenstein.gameplay.MainPlayer;
 import fr.umontpellier.iut.wolfenstein.gameplay.Map;
 import fr.umontpellier.iut.wolfenstein.gameplay.Player;
 import fr.umontpellier.iut.wolfenstein.graphismes.GameRenderer;
@@ -24,6 +25,8 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Cette classe est le composant princpal du programme JavaFX, et sera composée des différentes parties graphiques du jeu.
@@ -41,15 +44,35 @@ public class MainApp extends Application {
 
     private GameRenderer game;
     private Scene scene;
-    private Player currPlayer;
+    private MainPlayer currPlayer;
     private Player[] players;
 
     private Minimap minimap;
 
+    private HashSet<KeyCode> pressedKeys;
+
+    private List<KeyCode> numpadKeys = Arrays.asList(
+            KeyCode.NUMPAD0,
+            KeyCode.NUMPAD1,
+            KeyCode.NUMPAD2,
+            KeyCode.NUMPAD3,
+            KeyCode.NUMPAD4,
+            KeyCode.NUMPAD5
+    );
+
     private final InvalidationListener whenPlayerAmountSet = change -> startGame();
 
+    private static final Color[] colors = {
+            Color.CYAN,
+            Color.RED,
+            Color.YELLOW,
+            Color.GREEN
+    };
 
 
+    /**
+     * Démarre la fonction start() de la classe parente Application (que l'on override)
+     */
     public static void main(String[] args) {
         launch(args);
     }
@@ -64,6 +87,7 @@ public class MainApp extends Application {
         this.primaryStage = stage;
         this.nbPlayers = new SimpleIntegerProperty(0);
         this.currPlayerID = new SimpleIntegerProperty(0);
+        this.pressedKeys = new HashSet<>();
         stage.setTitle("Wolfenstus 3D");
 
         // Les trois lignes suivantes permettent de démarrer le menu principal et de faire fonctionner le lancement du jeu
@@ -88,7 +112,7 @@ public class MainApp extends Application {
         minimapInit();
 
         // on instancie le moteur de jeu
-        game = new GameRenderer(currPlayer, minimap);
+        game = GameRenderer.getInstance();
         game.setMap(createMap(0));
 
 
@@ -137,56 +161,36 @@ public class MainApp extends Application {
      * Cette méthode crée la minimap affichée à droite de l'écran et lui donne les différents joueurs à afficher
      */
     private void minimapInit() {
-        minimap = new Minimap();
+        minimap = Minimap.getInstance();
         // Permet d'afficher chaque joueur sur la minimap
         for(Player player : players){
             minimap.addJoueur(player);
         }
-        minimap.setMap("levels/level0.png");
     }
 
     /**
      * Cette méthode va remplir la liste de joueurs en fonction du nombre de joueurs entrés dans le menu principal.
      */
     private void createPlayers(){
-        players = new Player[nbPlayers.get()];
+        int playerAmount = nbPlayers.get();
+        players = new Player[playerAmount];
 
-        Player player1 = new Player(Color.CYAN,1);
-        players[0] = player1;
-        if (currPlayerID.get() == 1){
-            currPlayer = player1;
-        }
-
-        if (nbPlayers.get() >= 2){
-            Player player2 = new Player(Color.RED, 2);
-            players[1] = player2;
-            if (currPlayerID.get() == 2){
-                currPlayer = player2;
+        for (int i = 0; i < playerAmount; i++) {
+            Player newPlayer = new Player();
+            if (currPlayerID.get() == i+1){
+                currPlayer = MainPlayer.getInstance();
+                newPlayer = currPlayer;
             }
+            players[i] = newPlayer;
         }
 
-        if (nbPlayers.get() >= 3){
-            Player player3 = new Player(Color.YELLOW, 3);
-            players[2] = player3;
-            if (currPlayerID.get() == 3){
-                currPlayer = player3;
-            }
-        }
-
-        if (nbPlayers.get() == 4){
-            Player player4 = new Player(Color.GREEN, 4);
-            players[3] = player4;
-            if (currPlayerID.get() == 4){
-                currPlayer = player4;
-            }
-        }
-
-        if (nbPlayers.get() >= 2){
-            for (Player player : players){
-                player.setMultiplayer();
+        if (nbPlayers.get() > 1){
+            for (int i = 0; i < playerAmount; i++) {
+                players[i].setMultiplayer(colors[i], i+1);
             }
             WolfClient.getInstance().setPlayers(new ArrayList<>(Arrays.asList(players)));
         }
+        currPlayer.setPressedKeys(pressedKeys);
     }
 
 
@@ -210,35 +214,9 @@ public class MainApp extends Application {
     private void gameHandlers() {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             KeyCode code = key.getCode();
-            if (code == KeyCode.UP || code == KeyCode.Z) {
-                currPlayer.setUp(true);
-            }
-            else if (code == KeyCode.DOWN || code == KeyCode.S) {
-                currPlayer.setDown(true);
-            }
-            else if(code == KeyCode.LEFT || code == KeyCode.Q) {
-                currPlayer.setLeft(true);
-            }
-            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
-                currPlayer.setRight(true);
-            }
-            else if (code == KeyCode.NUMPAD0) {
-                changeLevel(0);
-            }
-            else if (code == KeyCode.NUMPAD1) {
-                changeLevel(1);
-            }
-            else if (code == KeyCode.NUMPAD2) {
-                changeLevel(2);
-            }
-            else if (code == KeyCode.NUMPAD3) {
-                changeLevel(3);
-            }
-            else if (code == KeyCode.NUMPAD4) {
-                changeLevel(4);
-            }
-            else if (code == KeyCode.NUMPAD5) {
-                changeLevel(5);
+            pressedKeys.add(code);
+            if (numpadKeys.contains(code)) {
+                changeLevel(numpadKeys.indexOf(code));
             }
             else if (code == KeyCode.ESCAPE){
                 Platform.exit();
@@ -247,18 +225,7 @@ public class MainApp extends Application {
         });
         scene.addEventHandler(KeyEvent.KEY_RELEASED, (key) -> {
             KeyCode code = key.getCode();
-            if (code == KeyCode.UP || code == KeyCode.Z) {
-                currPlayer.setUp(false);
-            }
-            else if (code == KeyCode.DOWN || code == KeyCode.S) {
-                currPlayer.setDown(false);
-            }
-            else if(code == KeyCode.LEFT || code == KeyCode.Q) {
-                currPlayer.setLeft(false);
-            }
-            else if (code == KeyCode.RIGHT || code == KeyCode.D) {
-                currPlayer.setRight(false);
-            }
+            pressedKeys.remove(code);
             key.consume();
         });
         scene.addEventHandler(MouseEvent.MOUSE_MOVED, (mouse) -> {
@@ -267,11 +234,9 @@ public class MainApp extends Application {
             if (mouse.getScreenY() > milieuY+1 || mouse.getScreenY() < milieuY-1){
                 currPlayer.moveCameraPitch(-(float)(mouse.getScreenY() - milieuY)*0.8f);
             }
-            if (mouse.getScreenX() < milieuX - 1){
-                currPlayer.lookLeft((float)(mouse.getScreenX() - milieuX)*0.1f);
-            }
-            else if (mouse.getScreenX() > milieuX + 1){
-                currPlayer.lookRight((float)(mouse.getScreenX() - milieuX)*0.1f);
+            double mouseSideAmount = milieuX - mouse.getScreenX();
+            if (mouseSideAmount < -1 || mouseSideAmount > 1){
+                currPlayer.lookSide((float)mouseSideAmount*0.001f, mouseSideAmount < -1);
             }
             moveCursor();
         });
