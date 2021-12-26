@@ -300,28 +300,28 @@ public class GameRenderer extends Pane {
 
             // On utilise le déterminant pour inverser correctement la matrice et replacer le sprite dans le nouveau plan
             float spriteScreenPosX = (-vy*vectorY - vx*vectorX)/d; // valeur forcément positive
-            float spriteScreenPosY = (vy*vectorX - vx*vectorY)/d;
-
-            // Il faut désormais replacer ces valeurs sur un X de coordonnées realWidth et non mapSize
-            int screenPosX  = (int) ((screenWidth / 2) * (1 + spriteScreenPosY / spriteScreenPosX));
-            // La taille en pixels du sprite sur l'écran.
-            int tailleSprite = (int) Math.abs(screenHeight / spriteScreenPosX);
-
-            int demiSprite = tailleSprite/2;
-
-            int gaucheSprite = screenPosX - demiSprite;
-            if (gaucheSprite < 0) gaucheSprite = 0;
-            int droiteSprite = screenPosX + demiSprite;
-            if (droiteSprite >= screenWidth) droiteSprite = screenWidth - 1;
-
-            int camPitch = (int)currPlayer.getCamPitch();
-            int hautSprite = screenHeight /2 - demiSprite + camPitch;
-            if (hautSprite < 0) hautSprite = 0;
-            int basSprite = screenHeight /2 + demiSprite + camPitch;
-            if (basSprite >= screenHeight) basSprite = screenHeight - 1 ;
-
-            // On dessine le sprite
             if (spriteScreenPosX > 0.5){ // On ne dessine le sprite que si il se trouve au moins 0.5 unités devant le joueur
+                float spriteScreenPosY = (vy*vectorX - vx*vectorY)/d;
+
+                // Il faut désormais replacer ces valeurs sur un X de coordonnées realWidth et non mapSize
+                int screenPosX  = (int) ((screenWidth / 2) * (1 + spriteScreenPosY / spriteScreenPosX));
+                // La taille en pixels du sprite sur l'écran.
+                int tailleSprite = (int) Math.abs(screenHeight / spriteScreenPosX);
+
+                int demiSprite = tailleSprite/2;
+
+                int gaucheSprite = screenPosX - demiSprite;
+                if (gaucheSprite < 0) gaucheSprite = 0;
+                int droiteSprite = screenPosX + demiSprite;
+                if (droiteSprite >= screenWidth) droiteSprite = screenWidth - 1;
+
+                int camPitch = (int)currPlayer.getCamPitch();
+                int hautSprite = screenHeight /2 - demiSprite + camPitch;
+                if (hautSprite < 0) hautSprite = 0;
+                int basSprite = screenHeight /2 + demiSprite + camPitch;
+                if (basSprite >= screenHeight) basSprite = screenHeight - 1 ;
+
+                // On dessine le sprite
                 for (int x = gaucheSprite; x < droiteSprite; x++) {
 
                     int texX = (x + tailleSprite/2 - screenPosX) * texSize / tailleSprite;
@@ -341,7 +341,6 @@ public class GameRenderer extends Pane {
                 }
             }
         }
-
     }
 
     /**
