@@ -70,10 +70,20 @@ public class MainPlayer extends Player{
             move(-vx * moveAmount * deltaTime, -vy * moveAmount * deltaTime);
         }
         if (pressedKeys.contains(KeyCode.LEFT) || pressedKeys.contains(KeyCode.Q)){
-            move(vy * moveAmount * deltaTime, -vx * moveAmount * deltaTime);
+            if (pressedKeys.contains(KeyCode.SHIFT)){
+                move(vy * moveAmount * deltaTime, -vx * moveAmount * deltaTime);
+            }
+            else {
+                lookSide(0.025f, false);
+            }
         }
         if (pressedKeys.contains(KeyCode.RIGHT) || pressedKeys.contains(KeyCode.D)){
-            move(-vy * moveAmount * deltaTime, vx * moveAmount * deltaTime);
+            if (pressedKeys.contains(KeyCode.SHIFT)){
+                move(-vy * moveAmount * deltaTime, vx * moveAmount * deltaTime);
+            }
+            else {
+                lookSide(0.025f, true);
+            }
         }
     }
 
