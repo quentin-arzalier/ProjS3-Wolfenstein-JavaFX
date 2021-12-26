@@ -376,7 +376,6 @@ public class GameRenderer extends Pane {
         double newPosX = posX;
         double newPosY = posY;
         float wallDist = 0;
-        int wallHeight;
         int hit = 0;
         int side = 0;
 

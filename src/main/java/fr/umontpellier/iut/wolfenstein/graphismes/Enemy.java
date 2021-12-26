@@ -1,6 +1,5 @@
 package fr.umontpellier.iut.wolfenstein.graphismes;
 
-import fr.umontpellier.iut.wolfenstein.gameplay.MainPlayer;
 import javafx.scene.image.Image;
 
 /**

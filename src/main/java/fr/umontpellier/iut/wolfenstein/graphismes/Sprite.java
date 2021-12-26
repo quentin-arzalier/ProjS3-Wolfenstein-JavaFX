@@ -8,16 +8,13 @@ public class Sprite implements Comparable<Sprite>{
     private float posX;
     private float posY;
     private float dist;
-    private String texname;
     private Image tex;
 
     private int[][] worldmap;
-    private long currTime;
 
     public Sprite(float posX, float posY, String tex) {
         this.posX = posX;
         this.posY = posY;
-        this.texname = tex;
         this.tex = new Image("sprites/" + tex + ".png");
     }
 

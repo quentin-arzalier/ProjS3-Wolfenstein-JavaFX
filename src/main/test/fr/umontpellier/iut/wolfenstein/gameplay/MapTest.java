@@ -4,11 +4,9 @@ package fr.umontpellier.iut.wolfenstein.gameplay;
 import fr.umontpellier.iut.wolfenstein.TestApp;
 import fr.umontpellier.iut.wolfenstein.gameplay.Map;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
