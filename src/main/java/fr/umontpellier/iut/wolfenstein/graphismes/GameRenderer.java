@@ -106,6 +106,7 @@ public class GameRenderer extends Pane {
         for (Sprite sprite : sprites){
             sprite.update(deltaTime);
         }
+        Collections.sort(sprites);
     }
 
     private void draw(){
@@ -255,12 +256,6 @@ public class GameRenderer extends Pane {
         // Coordonnées du vecteur vision du joueur
         float vx = currPlayer.getVx();
         float vy = currPlayer.getVy();
-
-        // On trie les sprites dans l'ordre décroissant des distances au joueur pour afficher les plus proches en dernier (au premier plan)
-        for (Sprite s : sprites) {
-            s.setDist(posX, posY);
-        }
-        Collections.sort(sprites);
 
         for (Sprite currSprite : sprites) {
             // Coordonnées du point S associées à la position du sprite

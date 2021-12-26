@@ -63,26 +63,27 @@ public class MainPlayer extends Player{
     private void moveCharacter(float deltaTime) {
         float vx = getVx();
         float vy = getVy();
+
         if (pressedKeys.contains(KeyCode.UP) || pressedKeys.contains(KeyCode.Z)){
-            move(vx * moveAmount * deltaTime, vy * moveAmount * deltaTime);
+            move(vx * moveAmount * deltaTime, vy * moveAmount * deltaTime);         // Avance
         }
         if (pressedKeys.contains(KeyCode.DOWN) || pressedKeys.contains(KeyCode.S)){
-            move(-vx * moveAmount * deltaTime, -vy * moveAmount * deltaTime);
+            move(-vx * moveAmount * deltaTime, -vy * moveAmount * deltaTime);       // Recule
         }
         if (pressedKeys.contains(KeyCode.LEFT) || pressedKeys.contains(KeyCode.Q)){
             if (pressedKeys.contains(KeyCode.SHIFT)){
-                move(vy * moveAmount * deltaTime, -vx * moveAmount * deltaTime);
+                move(vy * moveAmount * deltaTime, -vx * moveAmount * deltaTime);    // Se déplace vers la gauche
             }
             else {
-                lookSide(0.025f, false);
+                lookSide(0.025f, false);                                            // Se tourne vers la gauche
             }
         }
         if (pressedKeys.contains(KeyCode.RIGHT) || pressedKeys.contains(KeyCode.D)){
             if (pressedKeys.contains(KeyCode.SHIFT)){
-                move(-vy * moveAmount * deltaTime, vx * moveAmount * deltaTime);
+                move(-vy * moveAmount * deltaTime, vx * moveAmount * deltaTime);    // Se déplace vers la droite
             }
             else {
-                lookSide(0.025f, true);
+                lookSide(0.025f, true);                                             // Se tourne vers la droite
             }
         }
     }
@@ -90,10 +91,12 @@ public class MainPlayer extends Player{
     private void move(float movX, float movY){
         float posX = getPosX();
         float posY = getPosY();
+        // Vérifie si on peut se déplacer sur l'axe X puis se déplace en conséquence
         if (isPositionValid(posX + movX, posY)){
             setPosX(posX + movX);
             getSprite().updatePos(posX + movX, posY);
         }
+        // Vérifie si on peut se déplacer sur l'axe Y puis se déplace en conséquence
         if (isPositionValid(posX, posY + movY)){
             setPosY(posY + movY);
             getSprite().updatePos(posX, posY + movY);
@@ -103,6 +106,7 @@ public class MainPlayer extends Player{
     private boolean isPositionValid(float newPosX, float newPosY) {
         int xi = (int) newPosX;
         int yi = (int) newPosY;
+        // Vérifie si on peut se déplacer aux coordonnées newPosX et newPosY (on ne peut pas s'approcher à moins de 0.1 case d'un mur)
         if (worldMap[xi][yi] != 0) return false;
         if (newPosX%1 >= 0.9 && worldMap[xi+1][yi] != 0) return false;
         if (newPosX%1 <= 0.1 && worldMap[xi-1][yi] != 0) return false;
