@@ -153,9 +153,11 @@ public class GameRenderer extends Pane {
             int scanLineY = y - (int)horizon - (int)camPitch;
             if (!isFloor) scanLineY *= -1; // Nécessaire pour que le plafond soit dessiné correctement lorsque le joueur bouge
 
+
             float rowDist = horizon / scanLineY;
 
             // Pas permettant de capter la position de la texture du mur/du sol
+            // Ces deux lignes de codes sont tirées du site lodev.org et nous ne comprenons pas exactement leur fonctionnement
             float pasX = rowDist * (camVectXD - camVectXG)/ screenWidth;
             float pasY = rowDist * (camVectYD - camVectYG)/ screenWidth;
 
@@ -165,6 +167,8 @@ public class GameRenderer extends Pane {
 
             // On commence le dessin ligne par ligne
             for (int x = 0; x < screenWidth; x++) {
+                // Ces deux lignes ont également été copiées du site lodev.org et nous ne comrenons pas le fonctionnement
+                // de l'opérateur & dans ce calcul.
                 int texX = (int)(texSize * (solX % 1)) & (texSize -1);
                 int texY = (int)(texSize * (solY % 1)) & (texSize -1);
 
