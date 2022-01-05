@@ -21,8 +21,8 @@ public class Enemy extends Sprite{
     /** Définit de manière non modifiable la vitesse de déplacement du sprite */
     private final float moveSpeed = 0.025f;
 
-    private long lastFrameTime;
-    private long lastMoveTime;
+    private float lastFrameTime;
+    private float lastMoveTime;
 
     public Enemy(float posX, float posY, String tex) {
         super(posX, posY, tex);
@@ -34,19 +34,19 @@ public class Enemy extends Sprite{
 
         String tex;
         if (currFrame != 0){
-            tex = "sprites/garde/" + Direction(playerX,playerY) +"/"+ "garde" + currFrame + ".png";
+            tex = "sprites/garde/" + direction(playerX,playerY) +"/"+ "garde" + currFrame + ".png";
         }
         else {
-            tex = "sprites/garde/" + Direction(playerX,playerY) +"/garde.png";
+            tex = "sprites/garde/" + direction(playerX,playerY) +"/garde.png";
         }
 
 
-        if (getCurrTime() - lastFrameTime >= 200_000_000){
-            lastFrameTime = getCurrTime();
+        if (lastFrameTime >= 0.2f){
+            lastFrameTime -= 0.2f;
             nextFrame();
         }
-        if (getCurrTime() - lastMoveTime >= 1_000_000_000){
-            lastMoveTime = getCurrTime();
+        if (lastMoveTime >= 1){
+            lastMoveTime -= 1;
             if (currFrame == 0){
                 start();
                 changeDirection();
@@ -69,7 +69,7 @@ public class Enemy extends Sprite{
      * @param playerY La position Y du joueur
      * @return L'indice du dossier dans lequel se trouve l
      */
-    public String Direction(float playerX, float playerY){
+    public String direction(float playerX, float playerY){
         double DistY = playerY - getPosY();
 
         double rayonXG = getPosX() - (Math.abs(DistY)/2) ;
@@ -171,4 +171,10 @@ public class Enemy extends Sprite{
         }
     }
 
+    @Override
+    public void update(float deltaTime) {
+        super.update(deltaTime);
+        lastFrameTime += deltaTime;
+        lastMoveTime += deltaTime;
+    }
 }
