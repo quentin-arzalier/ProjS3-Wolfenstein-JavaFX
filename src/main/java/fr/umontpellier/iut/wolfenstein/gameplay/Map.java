@@ -61,6 +61,18 @@ public class Map {
                 else if (maCoul.equals(Color.web("#99CCFF"))){
                     worldMap[i][j] = 10;
                 }
+                else if (maCoul.equals(Color.web("#FF99CC"))){
+                    worldMap[i][j] = 11;
+                }
+                else if (maCoul.equals(Color.web("#FFCC99"))){
+                    worldMap[i][j] = 12;
+                }
+                else if (maCoul.equals(Color.web("#FFFF99"))){
+                    worldMap[i][j] = 13;
+                }
+                else if (maCoul.equals(Color.web("#CC99FF"))){
+                    worldMap[i][j] = 14;
+                }
                 else if (maCoul.equals(Color.SADDLEBROWN)){
                     sprites.add(new Sprite(i+0.5f, j+0.5f, "barrel"));
                     worldMap[i][j] = 0;
@@ -77,8 +89,11 @@ public class Map {
                     sprites.add(new Enemy(i+0.5f, j+0.5f, "garde"));
                     worldMap[i][j] = 0;
                 }
-                else {
+                else if (maCoul.equals(Color.BLACK)){
                     worldMap[i][j] = 0;
+                }
+                else {
+                    worldMap[i][j] = 99;
                 }
             }
         }

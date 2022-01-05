@@ -21,6 +21,10 @@ public enum MurType {
     GLASSEW(8), //PURPLE
     GLASSCORNERUP(9), //Cyan clair
     GLASSCORNERDOWN(10), //Cyan clair
+    LETTER_M(11), //Cyan clair
+    LETTER_U(12), //Cyan clair
+    LETTER_R(13), //Cyan clair
+    LETTER_S(14), //Cyan clair
     UNKNOWN(0); //PURPLE
 
 
@@ -36,11 +40,18 @@ public enum MurType {
     private final Image shadeTex;
 
     MurType(int id){
-        this.id = id;                                                  //Attribution de l'ID désiré
-        int texId = this.id;                                           //Duplication de l'ID, cela va nous permettre de gagner des opérations
-        if (id <= 10 && id >= 7) texId = 7;                            //Les ID compris entre 7 et 10 sont tous des types de vitres. Du coup, on va aller chercher la texture par défaut d'une vitre.
-        this.tex = new Image("tex/"+texId+"A.png");                 //Ouverture des fichiers grâce à la classe Image de JavaFX
-        this.shadeTex = new Image("tex/"+texId+"B.png");
+        this.id = id;
+        int texId = this.id;
+        if (id == 7 || id == 8) texId = 7;
+        if (id == 9 || id == 10){
+            texId = 1;
+            this.tex = new Image("tex/"+texId+"A.png");
+            this.shadeTex = new Image("tex/"+texId+"A.png");
+        }
+        else {
+            this.tex = new Image("tex/"+texId+"A.png");
+            this.shadeTex = new Image("tex/"+texId+"B.png");
+        }
     }
 
     /**

@@ -446,7 +446,7 @@ public class GameRenderer extends Pane {
                 retour.put("wallHeight"+nbHits, wallHeight);
                 retour.put("newPosX"+nbHits, newPosX);
                 retour.put("newPosY"+nbHits, newPosY);
-                if (hit >= 7 && hit <= 10) {
+                if (hit == 7 || hit == 8) {
                     hit = 0;
                     newPosX = oldX;
                     newPosY = oldY;
